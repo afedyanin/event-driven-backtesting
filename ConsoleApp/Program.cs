@@ -16,11 +16,7 @@
         {
             Console.WriteLine("Starting...");
 
-            Console.WindowWidth = CONST_ScreenWidth;
-            Console.BufferWidth = CONST_ScreenWidth;
-
-            Console.WindowHeight = CONST_ScreenHeight;
-            Console.BufferHeight = CONST_ScreenHeight;
+            SetupScreen();
 
             var sber = ReindexByDateTime(Frame.ReadCsv("Data\\SBER_151123_151221.csv"));
             sber.Print();
@@ -43,6 +39,15 @@
             frame.DropColumn(timeColumnName);
 
             return frame.IndexRows<DateTime>(dateTimeColumnName).SortRowsByKey();
+        }
+
+        public static void SetupScreen()
+        {
+            Console.WindowWidth = CONST_ScreenWidth;
+            Console.BufferWidth = CONST_ScreenWidth;
+
+            Console.WindowHeight = CONST_ScreenHeight;
+            Console.BufferHeight = CONST_ScreenHeight;
         }
 
         #region Old stuff
