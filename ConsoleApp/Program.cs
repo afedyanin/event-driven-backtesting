@@ -36,9 +36,11 @@ SBER,1,20151123,100900,106.3900000,106.4500000,106.3000000,106.4500000,218000
 SBER,1,20151123,101000,106.4700000,106.4700000,106.3400000,106.4100000,122320
 ";
 
-            // var sber = Csv2Frame.LoadFromFile("Data/sber.csv");
-            var sber2 = Csv2Frame.LoadFromString(csvString);
-            sber2.Print();
+            var dataHandler = new HistoricCsvDataHandler(null, "Data", new[] { "sber", "vtbr" });
+            var sber = dataHandler.GetAllBarsBySymbol("sber");
+            var vtbr = dataHandler.GetAllBarsBySymbol("vtbr");
+            vtbr.Print();
+            sber.Print();
 
             Console.ReadLine();
         }
@@ -65,6 +67,13 @@ SBER,1,20151123,101000,106.4700000,106.4700000,106.3400000,106.4100000,122320
                 var oe = new OrderEvent("SBER", OrderType.Market, 10, Direction.Buy);
                 Console.WriteLine(oe);
                     Console.ReadLine();
+
+        // ---------------------------------
+
+            // var sber = Csv2Frame.LoadFromFile("Data/sber.csv");
+            var sber2 = Csv2Frame.LoadFromString(csvString);
+            sber2.Print();
+
         */
         #endregion
     }

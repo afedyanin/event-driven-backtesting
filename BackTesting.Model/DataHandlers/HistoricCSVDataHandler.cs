@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using BackTesting.Model.Entities;
     using BackTesting.Model.Utils;
     using Deedle;
     using Events;
@@ -20,7 +21,7 @@
         private readonly string csvDirectory;
         private readonly string[] symbolList;
 
-        private IDictionary<string, Frame<DateTime, string>> marketDataDictionary;
+        private ComposedMarketData marketData;
 
         public bool ContinueBacktest { get; set; }
 
@@ -37,14 +38,14 @@
             this.csvDirectory = csvDirectory;
             this.symbolList = symbolList;
 
-            this.marketDataDictionary = new Dictionary<string, Frame<DateTime, string>>();
+            this.marketData = new ComposedMarketData();
             this.OpenConvertCsvFiles();
             this.ContinueBacktest = true;
         }
 
         public Frame<DateTime, string> GetAllBarsBySymbol(string symbol)
         {
-            return this.marketDataDictionary[symbol];
+            return this.marketData.Get(symbol);
         }
 
         public override void GetLatestBars(string symbol, int n = 1)
@@ -67,14 +68,10 @@
         /// </summary>
         private void OpenConvertCsvFiles()
         {
-            IList<DateTime> rowKeys = null;
-
             foreach (var symbol in this.symbolList)
             {
                 var dataFrame = String2TimeSeries.Convert(this.LoadDataFrame(symbol));
-                this.marketDataDictionary.Add(symbol, dataFrame);
-                rowKeys = this.UnionRowKeys(rowKeys, dataFrame.RowKeys).ToList();
-                this.marketDataDictionary = this.ReindexDataFrames(this.marketDataDictionary, rowKeys);
+                this.marketData.Compose(symbol, dataFrame);
             }
         }
 
@@ -83,24 +80,6 @@
             var csvPath = Path.Combine(this.csvDirectory, symbol + ".csv");
             var frame = Csv2Frame.LoadFromFile(csvPath);
             return frame;
-        }
-
-        private IEnumerable<DateTime> UnionRowKeys(IEnumerable<DateTime> source1, IEnumerable<DateTime> source2)
-        {
-            return source1?.Union(source2) ?? source2;
-        }
-
-        private Dictionary<string, Frame<DateTime, string>> ReindexDataFrames(IDictionary<string, Frame<DateTime, string>>  source, IList<DateTime> rowKeys)
-        {
-            var res = new Dictionary<string, Frame<DateTime, string>>();
-
-            foreach (var key in source.Keys)
-            {
-                var reindexedFrame = source[key].RealignRows(rowKeys).SortRowsByKey();
-                res.Add(key, reindexedFrame);
-            }
-
-            return res;
         }
     }
 }

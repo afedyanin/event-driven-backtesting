@@ -39,6 +39,7 @@
   <ItemGroup>
     <Compile Include="DataHandlers\DataHandlerBase.cs" />
     <Compile Include="DataHandlers\HistoricCsvDataHandler.cs" />
+    <Compile Include="Entities\ComposedMarketData.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Enums\EventType.cs" />
     <Compile Include="Events\FillEvent.cs" />
