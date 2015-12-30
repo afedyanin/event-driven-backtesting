@@ -39,10 +39,13 @@
         {
             if (this.bars.ContainsKey(symbol))
             {
-                // join with existing frame
-                var existingFrame = this.bars[symbol];
-                var joined = existingFrame.Join(frame, JoinKind.Outer);
-                this.bars[symbol] = joined;
+                // todo: join with existing frame
+                // todo: invalid operation exception
+                //var existingFrame = this.bars[symbol];
+                //var joined = existingFrame.Join(frame, JoinKind.Outer);
+                //this.bars[symbol] = joined;
+
+                this.bars[symbol] = frame;
             }
             else
             {
