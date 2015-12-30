@@ -2,7 +2,9 @@
 {
     using System;
     using System.ComponentModel;
+    using System.Linq;
     using BackTesting.Model;
+    using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
     using BackTesting.Model.Utils;
     using Deedle;
@@ -18,27 +20,16 @@
 
             SetupScreen();
 
-            var sber = ReindexByDateTime(Frame.ReadCsv("Data\\SBER_151123_151221.csv"));
-            sber.Print();
+            var dataHandler = new HistoricCsvDataHandler(null, "Data", new [] {"sber", "vtbr"});
 
+            var sber = dataHandler.GetAllBarsBySymbol("sber");
+            var vtbr = dataHandler.GetAllBarsBySymbol("vtbr");
+
+            vtbr.Print();
             Console.ReadLine();
-        }
 
-        public static Frame<DateTime, string> ReindexByDateTime(
-            Frame<int, string> frame, 
-            string dateColumnName = "<DATE>", 
-            string timeColumnName = "<TIME>", 
-            string dateTimeColumnName = "DateTime")
-        {
-            var dtSeries = frame.Rows.Select(kvp => DateTimeStringConverter.Convert(
-                            kvp.Value.GetAs<string>(dateColumnName),
-                            kvp.Value.GetAs<string>(timeColumnName)));
-
-            frame.AddColumn(dateTimeColumnName, dtSeries);
-            frame.DropColumn(dateColumnName);
-            frame.DropColumn(timeColumnName);
-
-            return frame.IndexRows<DateTime>(dateTimeColumnName).SortRowsByKey();
+            sber.Print();
+            Console.ReadLine();
         }
 
         public static void SetupScreen()

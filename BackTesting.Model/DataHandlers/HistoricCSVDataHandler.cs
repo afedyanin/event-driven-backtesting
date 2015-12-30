@@ -1,5 +1,11 @@
 ﻿namespace BackTesting.Model.DataHandlers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using BackTesting.Model.Utils;
+    using Deedle;
     using Events;
 
     /// <summary>
@@ -13,6 +19,8 @@
         private readonly IEventBus eventBus;
         private readonly string csvDirectory;
         private readonly string[] symbolList;
+
+        private IDictionary<string, Frame<DateTime, string>> marketDataDictionary;
 
         public bool ContinueBacktest { get; set; }
 
@@ -29,13 +37,18 @@
             this.csvDirectory = csvDirectory;
             this.symbolList = symbolList;
 
-            this.ContinueBacktest = true;
+            this.marketDataDictionary = new Dictionary<string, Frame<DateTime, string>>();
             this.OpenConvertCsvFiles();
+            this.ContinueBacktest = true;
+        }
+
+        public Frame<DateTime, string> GetAllBarsBySymbol(string symbol)
+        {
+            return this.marketDataDictionary[symbol];
         }
 
         public override void GetLatestBars(string symbol, int n = 1)
         {
-            throw new System.NotImplementedException();
         }
 
         public override void UpdateBars()
@@ -54,7 +67,57 @@
         /// </summary>
         private void OpenConvertCsvFiles()
         {
-            throw new System.NotImplementedException();
+            IList<DateTime> rowKeys = null;
+
+            foreach (var symbol in this.symbolList)
+            {
+                var dataFrame = this.ReindexRowsByDateTime(this.LoadDataFrame(symbol));
+                this.marketDataDictionary.Add(symbol, dataFrame);
+                rowKeys = this.UnionRowKeys(rowKeys, dataFrame.RowKeys).ToList();
+                this.marketDataDictionary = this.ReindexDataFrames(this.marketDataDictionary, rowKeys);
+            }
+        }
+
+        private Frame<int, string> LoadDataFrame(string symbol)
+        {
+            var csvPath = Path.Combine(this.csvDirectory, symbol + ".csv");
+            var frame = Frame.ReadCsv(csvPath);
+            return frame;
+        }
+
+        private Frame<DateTime, string> ReindexRowsByDateTime(
+            Frame<int, string> frame,
+            string dateColumnName = "<DATE>",
+            string timeColumnName = "<TIME>",
+            string dateTimeColumnName = "DateTime")
+        {
+            var dtSeries = frame.Rows.Select(kvp => DateTimeStringConverter.Convert(
+                            kvp.Value.GetAs<string>(dateColumnName),
+                            kvp.Value.GetAs<string>(timeColumnName)));
+
+            frame.AddColumn(dateTimeColumnName, dtSeries);
+            frame.DropColumn(dateColumnName);
+            frame.DropColumn(timeColumnName);
+
+            return frame.IndexRows<DateTime>(dateTimeColumnName).SortRowsByKey();
+        }
+
+        private IEnumerable<DateTime> UnionRowKeys(IEnumerable<DateTime> source1, IEnumerable<DateTime> source2)
+        {
+            return source1?.Union(source2) ?? source2;
+        }
+
+        private Dictionary<string, Frame<DateTime, string>> ReindexDataFrames(IDictionary<string, Frame<DateTime, string>>  source, IList<DateTime> rowKeys)
+        {
+            var res = new Dictionary<string, Frame<DateTime, string>>();
+
+            foreach (var key in source.Keys)
+            {
+                var reindexedFrame = source[key].RealignRows(rowKeys).SortRowsByKey();
+                res.Add(key, reindexedFrame);
+            }
+
+            return res;
         }
     }
 }
