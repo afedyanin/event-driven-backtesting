@@ -71,7 +71,7 @@
 
             foreach (var symbol in this.symbolList)
             {
-                var dataFrame = this.ReindexRowsByDateTime(this.LoadDataFrame(symbol));
+                var dataFrame = String2TimeSeries.Convert(this.LoadDataFrame(symbol));
                 this.marketDataDictionary.Add(symbol, dataFrame);
                 rowKeys = this.UnionRowKeys(rowKeys, dataFrame.RowKeys).ToList();
                 this.marketDataDictionary = this.ReindexDataFrames(this.marketDataDictionary, rowKeys);
@@ -81,25 +81,8 @@
         private Frame<int, string> LoadDataFrame(string symbol)
         {
             var csvPath = Path.Combine(this.csvDirectory, symbol + ".csv");
-            var frame = Frame.ReadCsv(csvPath);
+            var frame = Csv2Frame.LoadFromFile(csvPath);
             return frame;
-        }
-
-        private Frame<DateTime, string> ReindexRowsByDateTime(
-            Frame<int, string> frame,
-            string dateColumnName = "<DATE>",
-            string timeColumnName = "<TIME>",
-            string dateTimeColumnName = "DateTime")
-        {
-            var dtSeries = frame.Rows.Select(kvp => DateTimeStringConverter.Convert(
-                            kvp.Value.GetAs<string>(dateColumnName),
-                            kvp.Value.GetAs<string>(timeColumnName)));
-
-            frame.AddColumn(dateTimeColumnName, dtSeries);
-            frame.DropColumn(dateColumnName);
-            frame.DropColumn(timeColumnName);
-
-            return frame.IndexRows<DateTime>(dateTimeColumnName).SortRowsByKey();
         }
 
         private IEnumerable<DateTime> UnionRowKeys(IEnumerable<DateTime> source1, IEnumerable<DateTime> source2)

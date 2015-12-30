@@ -50,7 +50,9 @@
     <Compile Include="Events\SignalEvent.cs" />
     <Compile Include="Enums\SignalType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utils\DateTimeStringConverter.cs" />
+    <Compile Include="Utils\Csv2Frame.cs" />
+    <Compile Include="Utils\String2DateTime.cs" />
+    <Compile Include="Utils\String2TimeSeries.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
