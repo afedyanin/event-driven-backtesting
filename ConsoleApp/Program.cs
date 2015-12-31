@@ -87,9 +87,9 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
         private static void PrintRow(ObjectSeries<string> row)
         {
             var time = (DateTime)row["DateTime"];
-            var open = row["<OPEN>"];
-            var close = row["<CLOSE>"];
-            var volume = row["<VOL>"];
+            var open = (decimal)row["<OPEN>"];
+            var close = (decimal)row["<CLOSE>"];
+            var volume = (int)row["<VOL>"];
 
             Console.WriteLine($"{time} O={open} C={close} V={volume}");
         }

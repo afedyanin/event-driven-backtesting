@@ -4,6 +4,7 @@
     {
         Undefined = 0,
         Long = 1,
-        Short = 2
+        Short = 2,
+        Exit = 3
     }
 }
