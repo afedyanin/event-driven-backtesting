@@ -49,7 +49,7 @@
     <Compile Include="Events\FillEvent.cs" />
     <Compile Include="Events\IEventBus.cs" />
     <Compile Include="Events\MarketEvent.cs" />
-    <Compile Include="Enums\Direction.cs" />
+    <Compile Include="Enums\TransactionDirection.cs" />
     <Compile Include="Events\OrderEvent.cs" />
     <Compile Include="Enums\OrderType.cs" />
     <Compile Include="Events\SignalEvent.cs" />

@@ -36,18 +36,18 @@
         {
             foreach (var symbol in this.bars.Symbols)
             {
-                var lastBar = this.bars.GetLatestBars(symbol).FirstOrDefault();
+                if (this.bought[symbol])
+                {
+                    // Already bougth
+                    continue;
+                }
+
+                var lastBar = this.bars.GetLast(symbol);
 
                 // TODO: Check missing values
                 if (lastBar == null)
                 {
                     // No market data
-                    continue;
-                }
-
-                if (this.bought[symbol])
-                {
-                    // Already bougth
                     continue;
                 }
 

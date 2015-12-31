@@ -12,7 +12,7 @@
         public string Symbol { get; private set; }
         public OrderType OrderType { get; private set; }
         public int Quantity { get; private set; }
-        public Direction OrderDirection { get; private set; }
+        public TransactionDirection OrderDirection { get; private set; }
 
         /// <summary>
         /// Initialises the order type, setting whether it is
@@ -23,7 +23,7 @@
         /// <param name="orderType">Market or Limit</param>
         /// <param name="quantity">Non-negative integer for quantity</param>
         /// <param name="orderDirection">'BUY' or 'SELL' for long or short</param>
-        public OrderEvent(string symbol, OrderType orderType, int quantity, Direction orderDirection)
+        public OrderEvent(string symbol, OrderType orderType, int quantity, TransactionDirection orderDirection)
         {
             this.Symbol = symbol;
             this.OrderType = orderType;

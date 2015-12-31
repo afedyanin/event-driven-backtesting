@@ -16,7 +16,7 @@
         public string Symbol { get; private set; }
         public string Exchange { get; private set; }
         public int Quantity { get; private set; }
-        public Direction Direction { get; private set; }
+        public TransactionDirection Direction { get; private set; }
         public decimal FillCost { get; private set; }
         public decimal Comission { get; private set; }
 
@@ -31,7 +31,7 @@
         /// <param name="direction">The direction of fill ('BUY' or 'SELL')</param>
         /// <param name="fillCost">The holdings value in dollars</param>
         /// <param name="comission">An optional commission sent from IB</param>
-        public FillEvent(string timeIndex, string symbol, string exchange, int quantity, Direction direction, decimal fillCost, decimal comission = decimal.Zero)
+        public FillEvent(string timeIndex, string symbol, string exchange, int quantity, TransactionDirection direction, decimal fillCost, decimal comission = decimal.Zero)
         {
             this.TimeIndex = timeIndex;
             this.Symbol = symbol;

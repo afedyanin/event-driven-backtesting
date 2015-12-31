@@ -2,10 +2,10 @@
 {
     using System;
     using BackTesting.Model.DataHandlers;
-    using BackTesting.Model.Entities;
     using BackTesting.Model.Events;
     using System.Collections.Generic;
     using System.Linq;
+    using Deedle;
 
     /// <summary>
     /// The NaivePortfolio object is designed to send orders to
@@ -21,20 +21,39 @@
         private readonly IDictionary<string, int> currentPositions;
         private readonly IDictionary<string, decimal> currentHoldings;
 
-        private decimal comission;
-        private decimal cash;
-        private decimal total;
+        private decimal currentComission;
+        private decimal currentCash;
+        private decimal currentTotal;
 
-        public NaivePortfolio(IEventBus eventBus, DataHandlerBase bars, decimal initialCapital)
+        private readonly IDictionary<DateTime, Series<string, decimal>> positionHistory; 
+        private readonly IDictionary<DateTime, Series<string, decimal>> holdingHistory; 
+
+        public NaivePortfolio(IEventBus eventBus, DataHandlerBase bars, decimal initialCapital, DateTime startTime)
         {
             this.eventBus = eventBus;
             this.bars = bars;
-            this.currentPositions = this.ConstructCurrentPositions();
-            this.currentHoldings = this.ConstructCurrentHoldings();
 
-            this.comission = decimal.Zero;
-            this.cash = initialCapital;
-            this.total = initialCapital;
+            this.currentPositions = this.ConstructCurrentPositions();
+
+            this.currentHoldings = this.ConstructCurrentHoldings();
+            this.currentComission = decimal.Zero;
+            this.currentCash = initialCapital;
+            this.currentTotal = initialCapital;
+
+            this.positionHistory = new Dictionary<DateTime, Series<string, decimal>>();
+            this.AppendPositionHistory(startTime);
+
+            this.holdingHistory = new Dictionary<DateTime, Series<string, decimal>>();
+        }
+
+        public override Frame<DateTime, string> GetPositionHistory()
+        {
+            return Frame.FromRows(this.positionHistory);
+        }
+
+        public override Frame<DateTime, string> GetHoldingHistory()
+        {
+            return Frame.FromRows(this.holdingHistory);
         }
 
         /// <summary>
@@ -68,9 +87,10 @@
         /// current market data at this stage is known (OLHCVI).
         /// </summary>
         /// <param name="market"></param>
-        public void UpdateTimeIndex(MarketEvent market)
+        public override void UpdateTimeIndex(MarketEvent market)
         {
-            
+            this.AppendPositionHistory(market.CurrentTime);
+            this.AppendHoldingHistory(market.CurrentTime);
         }
 
         /// <summary>
@@ -92,20 +112,12 @@
         private void UpdateHoldingsFromFill(FillEvent fill)
         {
             var fillDir = GetNumericDirection(fill.Direction);
-            var lastBar = this.bars.GetLatestBars(fill.Symbol).First();
-            var closePrice = (decimal)lastBar["<CLOSE>"];
-            var cost = fillDir*closePrice*fill.Quantity;
+            var cost = fillDir*fill.FillCost*fill.Quantity;
+
             this.currentHoldings[fill.Symbol] += cost;
-
-            this.comission += fill.Comission;
-            this.cash -= (cost + fill.Comission);
-            this.total -= (cost + fill.Comission);
-        }
-
-        // TODO: Convert to extension
-        private static int GetNumericDirection(Direction dir)
-        {
-            return dir == Direction.Buy ? 1 : dir == Direction.Sell ? -1 : 0;
+            this.currentComission += fill.Comission;
+            this.currentCash -= (cost + fill.Comission);
+            this.currentTotal -= (cost + fill.Comission);
         }
 
         /// <summary>
@@ -118,9 +130,65 @@
             return this.bars.Symbols.ToDictionary(symbol => symbol, qty => 0);
         }
 
+        private void AppendPositionHistory(DateTime dateTime)
+        {
+            var sb = new SeriesBuilder<string, decimal>();
+
+            foreach (var kvp in this.currentPositions)
+            {
+                sb.Add(kvp.Key, kvp.Value);
+            }
+
+            if (this.positionHistory.ContainsKey(dateTime))
+            {
+                this.positionHistory[dateTime] = sb.Series;
+            }
+            else
+            {
+                this.positionHistory.Add(dateTime, sb.Series);
+            }
+        }
+
         private IDictionary<string, decimal> ConstructCurrentHoldings()
         {
             return this.bars.Symbols.ToDictionary(symbol => symbol, cost => decimal.Zero);
+        }
+
+        private void AppendHoldingHistory(DateTime dateTime) 
+        {
+            var sb = new SeriesBuilder<string, decimal>();
+
+            var marketHoldings = this.ConstructCurrentHoldings();
+            var cash = this.currentCash;
+            var commision = this.currentComission;
+            var total = this.currentCash;
+
+            foreach (var symbol in marketHoldings.Keys)
+            {
+                var lastBar = this.bars.GetLast(symbol);
+                var closePrice = (decimal) lastBar["<CLOSE>"];
+                var marketValue = this.currentPositions[symbol]*closePrice;
+                marketHoldings[symbol] = marketValue;
+                total += marketValue;
+            }
+
+            foreach (var kvp in marketHoldings)
+            {
+                sb.Add(kvp.Key, kvp.Value);
+            }
+
+            sb.Add("Comission", commision);
+            sb.Add("Cash", cash);
+            sb.Add("Total", total);
+
+            if (this.holdingHistory.ContainsKey(dateTime))
+            {
+                this.holdingHistory[dateTime] = sb.Series;
+            }
+            else
+            {
+                this.holdingHistory.Add(dateTime, sb.Series);
+            }
         }
 
         /// <summary>
@@ -142,22 +210,28 @@
 
             if (direction == SignalType.Long && currentQuantity == 0)
             {
-                return new OrderEvent(symbol, orderType, marketQuantity, Direction.Buy);
+                return new OrderEvent(symbol, orderType, marketQuantity, TransactionDirection.Buy);
             }
             if (direction == SignalType.Short && currentQuantity == 0)
             {
-                return new OrderEvent(symbol, orderType, marketQuantity, Direction.Sell);
+                return new OrderEvent(symbol, orderType, marketQuantity, TransactionDirection.Sell);
             }
             if (direction == SignalType.Exit && currentQuantity > 0)
             {
-                return new OrderEvent(symbol, orderType, Math.Abs(currentQuantity), Direction.Sell);
+                return new OrderEvent(symbol, orderType, Math.Abs(currentQuantity), TransactionDirection.Sell);
             }
             if (direction == SignalType.Exit && currentQuantity < 0)
             {
-                return new OrderEvent(symbol, orderType, Math.Abs(currentQuantity), Direction.Buy);
+                return new OrderEvent(symbol, orderType, Math.Abs(currentQuantity), TransactionDirection.Buy);
             }
 
             return null;
+        }
+
+        // TODO: Convert to extension
+        private static int GetNumericDirection(TransactionDirection dir)
+        {
+            return dir == TransactionDirection.Buy ? 1 : dir == TransactionDirection.Sell ? -1 : 0;
         }
     }
 }

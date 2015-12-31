@@ -1,6 +1,8 @@
 ﻿namespace BackTesting.Model.Portfolio
 {
+    using System;
     using BackTesting.Model.Events;
+    using Deedle;
 
     /// <summary>
     /// The Portfolio class handles the positions and market
@@ -9,16 +11,11 @@
     /// </summary>
     public abstract class PortfolioBase
     {
-        /// <summary>
-        /// Acts on a SignalEvent to generate new orders 
-        /// based on the portfolio logic.
-        /// </summary>
         public abstract void UpdateSignal(SignalEvent signal);
-
-        /// <summary>
-        /// Updates the portfolio current positions and holdings
-        /// from a FillEvent.
-        /// </summary>
         public abstract void UpdateFill(FillEvent fill);
+        public abstract void UpdateTimeIndex(MarketEvent market);
+
+        public abstract Frame<DateTime, string> GetPositionHistory();
+        public abstract Frame<DateTime, string> GetHoldingHistory();
     }
 }

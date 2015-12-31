@@ -1,6 +1,6 @@
 ﻿namespace BackTesting.Model
 {
-    public enum Direction
+    public enum TransactionDirection
     {
         Undefined = 0,
         Buy = 1,

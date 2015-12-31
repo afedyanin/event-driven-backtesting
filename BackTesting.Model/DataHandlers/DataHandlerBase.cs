@@ -21,6 +21,8 @@
         /// </summary>
         public abstract IEnumerable<ObjectSeries<string>> GetLatestBars(string symbol, int n = 1);
 
+        public abstract ObjectSeries<string> GetLast(string symbol);
+
         /// <summary>
         /// Pushes the latest bar to the latest symbol structure for all symbols in the symbol list.
         /// </summary>

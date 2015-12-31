@@ -38,6 +38,12 @@
             return bars.Rows.Values.Reverse().Take(n);
         }
 
+        public override ObjectSeries<string> GetLast(string symbol)
+        {
+            var bars = this.latestBars[symbol];
+            return bars.Rows.Values.Reverse().First();
+        }
+
         // Pushes the latest bar to the latestBars structure
         // for all symbols in the symbol list.
         public override void UpdateBars()
@@ -56,7 +62,7 @@
             }
 
             this.AppendLatestBars(nextTime.Value);
-            this.eventBus?.Put(new MarketEvent());
+            this.eventBus?.Put(new MarketEvent(nextTime.Value));
         }
 
         private DateTime? GetNextTime()

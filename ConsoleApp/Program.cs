@@ -56,24 +56,50 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
             // var dataSource = new FileCsvDataSource("Data", new[] { "sber", "vtbr" });
 
             var marketData = ComposedMarketData.CreateFromCsv(dataSource);
-            var dataHandler = new HistoricDataHandler(null, marketData);
+            var bars = new HistoricDataHandler(null, marketData);
 
-            dataHandler.UpdateBars();
-            dataHandler.UpdateBars();
-            dataHandler.UpdateBars();
-            dataHandler.UpdateBars();
-            dataHandler.UpdateBars();
+            var dict = new Dictionary<DateTime, Series<string, decimal>>();
 
-            PrintAllRows(dataHandler.GetLatestBars("sber", 3));
+            bars.UpdateBars();
+            UpdateDictionary(dict, bars);
+            bars.UpdateBars();
+            UpdateDictionary(dict, bars);
+            bars.UpdateBars();
+            UpdateDictionary(dict, bars);
+            bars.UpdateBars();
+            UpdateDictionary(dict, bars);
+            bars.UpdateBars();
+            UpdateDictionary(dict, bars);
+
+            var frame = Frame.FromRows(dict);
+            frame.Print();
+
+
+/*
+            PrintAllRows(bars.GetLatestBars("sber", 3));
             Console.WriteLine("-----------------------\n");
 
-            dataHandler.UpdateBars();
-            dataHandler.UpdateBars();
+            bars.UpdateBars();
+            bars.UpdateBars();
 
-            PrintAllRows(dataHandler.GetLatestBars("sber", 3));
+            PrintAllRows(bars.GetLatestBars("sber", 3));
             Console.WriteLine("-----------------------\n");
+*/
 
             Console.ReadLine();
+        }
+
+        private static void UpdateDictionary(IDictionary<DateTime, Series<string, decimal>> dict, HistoricDataHandler bars)
+        {
+            var lastSber = bars.GetLast("sber");
+            var lastVtbr = bars.GetLast("vtbr");
+            var currentTime = (DateTime)lastSber["DateTime"];
+
+            var sb = new SeriesBuilder<string, decimal>();
+            sb.Add("sber", (decimal)lastSber["<CLOSE>"] * 10);
+            sb.Add("vtbr", (decimal)lastVtbr["<CLOSE>"] * 20);
+
+            dict.Add(currentTime, sb.Series);
         }
 
         private static void PrintAllRows(IEnumerable<ObjectSeries<string>> rows)
