@@ -14,6 +14,8 @@
     /// </summary>
     public abstract class DataHandlerBase
     {
+        public abstract ICollection<string> Symbols { get; }
+
         /// <summary>
         /// Returns the last N bars from the latest_symbol list, or fewer if less bars are available.
         /// </summary>

@@ -17,10 +17,10 @@
     {
         private readonly IEventBus eventBus;
         private readonly IMarketData marketData;
-
         private readonly IDictionary<string, Frame<DateTime, string>> latestBars;
-        private readonly IEnumerator<DateTime> timeEnumerator; 
+        private readonly IEnumerator<DateTime> timeEnumerator;
 
+        public override ICollection<string> Symbols => this.marketData.Symbols;
         public bool ContinueBacktest { get; set; }
 
         public HistoricDataHandler(IEventBus eventBus, IMarketData marketData)
@@ -67,7 +67,7 @@
 
         private void AppendLatestBars(DateTime nextTime)
         {
-            foreach (var symbol in this.marketData.Symbols)
+            foreach (var symbol in this.Symbols)
             {
                 var bar = this.marketData.GetBars(symbol).Rows[nextTime];
 

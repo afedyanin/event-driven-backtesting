@@ -57,7 +57,6 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 
             var marketData = ComposedMarketData.CreateFromCsv(dataSource);
             var dataHandler = new HistoricDataHandler(null, marketData);
-            // var sber = dataHandler.GetAllBars("sber");
 
             dataHandler.UpdateBars();
             dataHandler.UpdateBars();
@@ -87,7 +86,7 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 
         private static void PrintRow(ObjectSeries<string> row)
         {
-            var time = row["DateTime"];
+            var time = (DateTime)row["DateTime"];
             var open = row["<OPEN>"];
             var close = row["<CLOSE>"];
             var volume = row["<VOL>"];
