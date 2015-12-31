@@ -1,29 +1,26 @@
 ﻿namespace BackTesting.Model.DataSource.Csv
 {
     using System.Collections.Generic;
-    using BackTesting.Model.Entities;
     using Deedle;
 
-    public abstract class CsvDataSource : ICsvDataSource
+    public abstract class CsvDataSource 
     {
-        private readonly IDictionary<string, Frame<int, string>> csvFramesDictionary;
-
-        public IDictionary<string, Frame<int, string>> CsvFrames => this.csvFramesDictionary;
+        public IDictionary<string, Frame<int, string>> Frames { get; }
 
         protected CsvDataSource()
         {
-            this.csvFramesDictionary = new Dictionary<string, Frame<int, string>>();
+            this.Frames = new Dictionary<string, Frame<int, string>>();
         }
 
         protected void AddOrReplace(string symbol, Frame<int, string> frame)
         {
-            if (this.csvFramesDictionary.ContainsKey(symbol))
+            if (this.Frames.ContainsKey(symbol))
             {
-                this.csvFramesDictionary[symbol] = frame;
+                this.Frames[symbol] = frame;
             }
             else
             {
-                this.csvFramesDictionary.Add(symbol, frame);
+                this.Frames.Add(symbol, frame);
             }
         }
     }

@@ -3,39 +3,38 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using BackTesting.Model.DataSource.Csv;
+    using BackTesting.Model.Utils;
     using Deedle;
 
-    public class ComposedMarketData
+    public class ComposedMarketData : IMarketData
     {
         private IDictionary<string, Frame<DateTime, string>> bars;
         private IList<DateTime> rowKeys;
 
-        protected IList<DateTime> RowKeys
-        {
-            get
-            {
-                return this.rowKeys;
-            }
-
-            set
-            {
-                this.rowKeys = value;
-                this.bars = ReindexDataFrames(this.bars, this.rowKeys);
-            }
-        }
-
-        public ComposedMarketData()
+        protected ComposedMarketData()
         {
             this.bars = new Dictionary<string, Frame<DateTime, string>>();
             this.rowKeys = new List<DateTime>();
         }
 
-        public Frame<DateTime, string> Get(string symbol)
+        public static ComposedMarketData CreateFromCsv(CsvDataSource dataSource)
+        {
+            var mdata = new ComposedMarketData();
+            foreach (var kvp in dataSource.Frames)
+            {
+                mdata.ComposeBars(kvp.Key, String2TimeSeries.Convert(kvp.Value));
+            }
+
+            return mdata;
+        }
+
+        public Frame<DateTime, string> GetBars(string symbol)
         {
             return !this.bars.ContainsKey(symbol) ? null : this.bars[symbol];
         }
 
-        public void Compose(string symbol, Frame<DateTime, string> frame)
+        public void ComposeBars(string symbol, Frame<DateTime, string> frame)
         {
             if (this.bars.ContainsKey(symbol))
             {
@@ -52,7 +51,8 @@
                 this.bars.Add(symbol, frame);
             }
 
-            this.RowKeys = UnionRowKeys(this.rowKeys, this.bars[symbol].RowKeys).ToList();
+            this.rowKeys = UnionRowKeys(this.rowKeys, this.bars[symbol].RowKeys).ToList();
+            this.bars = ReindexDataFrames(this.bars, this.rowKeys);
         }
 
         private static IEnumerable<DateTime> UnionRowKeys(IEnumerable<DateTime> source1, IEnumerable<DateTime> source2)

@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.DataSource.Csv;
+    using BackTesting.Model.Entities;
     using Deedle;
 
     class Program
@@ -55,9 +56,11 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
             var dataSource = new StringCsvDataSource(csvData);
             // var dataSource = new FileCsvDataSource("Data", new[] { "sber", "vtbr" });
 
-            var dataHandler = new HistoricCsvDataHandler(null, dataSource);
-            var sber = dataHandler.GetAllBarsBySymbol("sber");
-            var vtbr = dataHandler.GetAllBarsBySymbol("vtbr");
+            var marketData = ComposedMarketData.CreateFromCsv(dataSource);
+
+            var dataHandler = new HistoricDataHandler(null, marketData);
+            var sber = dataHandler.GetAllBars("sber");
+            var vtbr = dataHandler.GetAllBars("vtbr");
 
             vtbr.Print();
             sber.Print();

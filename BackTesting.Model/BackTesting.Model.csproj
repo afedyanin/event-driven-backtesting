@@ -38,12 +38,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataHandlers\DataHandlerBase.cs" />
-    <Compile Include="DataHandlers\HistoricCsvDataHandler.cs" />
+    <Compile Include="DataHandlers\HistoricDataHandler.cs" />
     <Compile Include="Entities\ComposedMarketData.cs" />
     <Compile Include="DataSource\Csv\CsvDataSource.cs" />
     <Compile Include="DataSource\Csv\FileCsvDataSource.cs" />
-    <Compile Include="DataSource\Csv\ICsvDataSource.cs" />
     <Compile Include="DataSource\Csv\StringCsvDataSource.cs" />
+    <Compile Include="Entities\IMarketData.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Enums\EventType.cs" />
     <Compile Include="Events\FillEvent.cs" />

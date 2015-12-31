@@ -1,9 +1,7 @@
 ﻿namespace BackTesting.Model.DataHandlers
 {
     using System;
-    using BackTesting.Model.DataSource.Csv;
     using BackTesting.Model.Entities;
-    using BackTesting.Model.Utils;
     using Deedle;
     using Events;
 
@@ -13,24 +11,24 @@
     /// to obtain the "latest" bar in a manner identical to a live
     /// trading interface. 
     /// </summary>
-    public class HistoricCsvDataHandler : DataHandlerBase
+    public class HistoricDataHandler : DataHandlerBase
     {
         private readonly IEventBus eventBus;
-        private readonly ComposedMarketData marketData;
+        private readonly IMarketData marketData;
 
         public bool ContinueBacktest { get; set; }
 
-        public HistoricCsvDataHandler(IEventBus eventBus, ICsvDataSource dataSource)
+        public HistoricDataHandler(IEventBus eventBus, IMarketData marketData)
         {
             this.eventBus = eventBus;
-            this.marketData = FillMarketData(dataSource);
+            this.marketData = marketData;
             this.ContinueBacktest = true;
         }
 
         // TODO: remove it
-        public Frame<DateTime, string> GetAllBarsBySymbol(string symbol)
+        public Frame<DateTime, string> GetAllBars(string symbol)
         {
-            return this.marketData.Get(symbol);
+            return this.marketData.GetBars(symbol);
         }
 
         public override void GetLatestBars(string symbol, int n = 1)
@@ -45,17 +43,6 @@
         public void GetNewBar(string symbol)
         {
             throw new System.NotImplementedException();
-        }
-
-        private static ComposedMarketData FillMarketData(ICsvDataSource dataSource)
-        {
-            var mdata = new ComposedMarketData();
-            foreach (var kvp in dataSource.CsvFrames)
-            {
-                mdata.Compose(kvp.Key, String2TimeSeries.Convert(kvp.Value));
-            }
-
-            return mdata;
         }
     }
 }
