@@ -1,7 +1,6 @@
 ﻿namespace BackTesting.Model.DataHandlers
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using BackTesting.Model.Entities;
@@ -19,7 +18,7 @@
         private readonly IEventBus eventBus;
         private readonly IMarketData marketData;
 
-        private IDictionary<string, Frame<DateTime, string>> latestBars;
+        private readonly IDictionary<string, Frame<DateTime, string>> latestBars;
         private readonly IEnumerator<DateTime> timeEnumerator; 
 
         public bool ContinueBacktest { get; set; }
@@ -33,14 +32,21 @@
             this.latestBars = new Dictionary<string, Frame<DateTime, string>>();
         }
 
-        public override void GetLatestBars(string symbol, int n = 1)
+        public override IEnumerable<ObjectSeries<string>> GetLatestBars(string symbol, int n = 1)
         {
+            var bars = this.latestBars[symbol];
+            return bars.Rows.Values.Reverse().Take(n);
         }
 
         // Pushes the latest bar to the latestBars structure
         // for all symbols in the symbol list.
         public override void UpdateBars()
         {
+            if (!this.ContinueBacktest)
+            {
+                return;
+            }
+
             var nextTime = this.GetNextTime();
 
             if (nextTime == null)
@@ -49,17 +55,8 @@
                 return;
             }
 
-            foreach (var symbol in this.marketData.Symbols)
-            {
-                var bar = this.marketData.GetBars(symbol).Rows[nextTime.Value];
-
-                if (!this.latestBars.ContainsKey(symbol))
-                {
-                    this.latestBars.Add(symbol, Frame.CreateEmpty<DateTime, string>());
-                }
-
-                this.latestBars[symbol] = this.Append(this.latestBars[symbol], nextTime.Value, bar);
-            }
+            this.AppendLatestBars(nextTime.Value);
+            this.eventBus?.Put(new MarketEvent());
         }
 
         private DateTime? GetNextTime()
@@ -68,7 +65,22 @@
             return moved ? this.timeEnumerator.Current : (DateTime?)null;
         }
 
-        private Frame<DateTime, string> Append(Frame<DateTime, string> targetFrame, DateTime key, ObjectSeries<string> bar)
+        private void AppendLatestBars(DateTime nextTime)
+        {
+            foreach (var symbol in this.marketData.Symbols)
+            {
+                var bar = this.marketData.GetBars(symbol).Rows[nextTime];
+
+                if (!this.latestBars.ContainsKey(symbol))
+                {
+                    this.latestBars.Add(symbol, Frame.CreateEmpty<DateTime, string>());
+                }
+
+                this.latestBars[symbol] = this.AppendBar(this.latestBars[symbol], nextTime, bar);
+            }
+        }
+
+        private Frame<DateTime, string> AppendBar(Frame<DateTime, string> targetFrame, DateTime key, ObjectSeries<string> bar)
         {
             var newData = new List<KeyValuePair<DateTime, ObjectSeries<string>>>()
             {
@@ -77,13 +89,7 @@
 
             var series = new Series<DateTime, ObjectSeries<string>>(newData);
             var merged = targetFrame.Rows.Merge(series, UnionBehavior.PreferRight);
-            return Frame.FromRows(merged);
-        }
-
-        // TODO: remove it
-        public Frame<DateTime, string> GetAllBars(string symbol)
-        {
-            return this.marketData.GetBars(symbol);
+            return Frame.FromRows(merged).SortRowsByKey();
         }
     }
 }

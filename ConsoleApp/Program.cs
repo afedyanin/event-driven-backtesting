@@ -57,18 +57,42 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 
             var marketData = ComposedMarketData.CreateFromCsv(dataSource);
             var dataHandler = new HistoricDataHandler(null, marketData);
-            var sber = dataHandler.GetAllBars("sber");
+            // var sber = dataHandler.GetAllBars("sber");
 
-            var sberRows = sber.Rows.Values;
+            dataHandler.UpdateBars();
+            dataHandler.UpdateBars();
+            dataHandler.UpdateBars();
+            dataHandler.UpdateBars();
+            dataHandler.UpdateBars();
 
-            foreach (var row in sberRows)
-            {
-                row.Print();
-            }
+            PrintAllRows(dataHandler.GetLatestBars("sber", 3));
+            Console.WriteLine("-----------------------\n");
 
-//            sber.Print();
+            dataHandler.UpdateBars();
+            dataHandler.UpdateBars();
+
+            PrintAllRows(dataHandler.GetLatestBars("sber", 3));
+            Console.WriteLine("-----------------------\n");
 
             Console.ReadLine();
+        }
+
+        private static void PrintAllRows(IEnumerable<ObjectSeries<string>> rows)
+        {
+            foreach (var row in rows)
+            {
+                PrintRow(row);
+            }
+        }
+
+        private static void PrintRow(ObjectSeries<string> row)
+        {
+            var time = row["DateTime"];
+            var open = row["<OPEN>"];
+            var close = row["<CLOSE>"];
+            var volume = row["<VOL>"];
+
+            Console.WriteLine($"{time} O={open} C={close} V={volume}");
         }
 
         public static void SetupScreen()

@@ -1,5 +1,8 @@
 ﻿namespace BackTesting.Model.DataHandlers
 {
+    using System.Collections.Generic;
+    using Deedle;
+
     /// <summary>
     /// DataHandler is an abstract base class providing an interface for
     /// all subsequent(inherited) data handlers(both live and historic).
@@ -14,7 +17,7 @@
         /// <summary>
         /// Returns the last N bars from the latest_symbol list, or fewer if less bars are available.
         /// </summary>
-        public abstract void GetLatestBars(string symbol, int n = 1);
+        public abstract IEnumerable<ObjectSeries<string>> GetLatestBars(string symbol, int n = 1);
 
         /// <summary>
         /// Pushes the latest bar to the latest symbol structure for all symbols in the symbol list.
