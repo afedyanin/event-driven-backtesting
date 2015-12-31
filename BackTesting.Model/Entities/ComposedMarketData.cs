@@ -10,12 +10,13 @@
     public class ComposedMarketData : IMarketData
     {
         private IDictionary<string, Frame<DateTime, string>> bars;
-        private IList<DateTime> rowKeys;
+        public IList<DateTime> RowKeys { get; private set; }
+        public ICollection<string> Symbols => this.bars.Keys;
 
         protected ComposedMarketData()
         {
             this.bars = new Dictionary<string, Frame<DateTime, string>>();
-            this.rowKeys = new List<DateTime>();
+            this.RowKeys = new List<DateTime>();
         }
 
         public static ComposedMarketData CreateFromCsv(CsvDataSource dataSource)
@@ -51,8 +52,8 @@
                 this.bars.Add(symbol, frame);
             }
 
-            this.rowKeys = UnionRowKeys(this.rowKeys, this.bars[symbol].RowKeys).ToList();
-            this.bars = ReindexDataFrames(this.bars, this.rowKeys);
+            this.RowKeys = UnionRowKeys(this.RowKeys, this.bars[symbol].RowKeys).ToList();
+            this.bars = ReindexDataFrames(this.bars, this.RowKeys);
         }
 
         private static IEnumerable<DateTime> UnionRowKeys(IEnumerable<DateTime> source1, IEnumerable<DateTime> source2)

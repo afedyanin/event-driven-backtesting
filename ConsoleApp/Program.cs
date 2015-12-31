@@ -1,6 +1,7 @@
 ﻿namespace ConsoleApp
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.DataSource.Csv;
@@ -12,15 +13,8 @@
         private const int CONST_ScreenWidth = 150;
         private const int CONST_ScreenHeight = 40;
 
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Starting...");
-
-            SetupScreen();
-
-            #region CSV data
-            var csvData = new Dictionary<string, string>()
-            {
+        #region CSV data sample
+        private static readonly IDictionary<string, string> CsvData = new Dictionary<string, string>() {
                 {"sber", @"
 <TICKER>,<PER>,<DATE>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>
 SBER,1,20151123,100100,106.8500000,106.8600000,106.1400000,106.2900000,655780
@@ -50,20 +44,29 @@ VTBR,1,20151123,100900,0.0758100,0.0758900,0.0758000,0.0758100,13090000
 VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 "}
             };
+        #endregion
 
-            #endregion
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Starting...");
 
-            var dataSource = new StringCsvDataSource(csvData);
+            SetupScreen();
+
+            var dataSource = new StringCsvDataSource(CsvData);
             // var dataSource = new FileCsvDataSource("Data", new[] { "sber", "vtbr" });
 
             var marketData = ComposedMarketData.CreateFromCsv(dataSource);
-
             var dataHandler = new HistoricDataHandler(null, marketData);
             var sber = dataHandler.GetAllBars("sber");
-            var vtbr = dataHandler.GetAllBars("vtbr");
 
-            vtbr.Print();
-            sber.Print();
+            var sberRows = sber.Rows.Values;
+
+            foreach (var row in sberRows)
+            {
+                row.Print();
+            }
+
+//            sber.Print();
 
             Console.ReadLine();
         }
