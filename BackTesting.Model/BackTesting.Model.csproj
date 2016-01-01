@@ -54,6 +54,8 @@
     <Compile Include="Enums\OrderType.cs" />
     <Compile Include="Events\SignalEvent.cs" />
     <Compile Include="Enums\SignalType.cs" />
+    <Compile Include="ExecutionHandlers\ExecutionHandlerBase.cs" />
+    <Compile Include="ExecutionHandlers\SimulatedExecutionHandler.cs" />
     <Compile Include="Portfolio\NaivePortfolio.cs" />
     <Compile Include="Portfolio\PortfolioBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
