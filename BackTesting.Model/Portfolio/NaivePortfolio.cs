@@ -56,11 +56,6 @@
             return Frame.FromRows(this.holdingHistory);
         }
 
-        /// <summary>
-        /// Acts on a SignalEvent to generate new orders 
-        /// based on the portfolio logic.
-        /// </summary>
-        /// <param name="signal"></param>
         public override void UpdateSignal(SignalEvent signal)
         {
             var orderEvent = this.GenerateNaiveOrder(signal);
@@ -70,45 +65,24 @@
             }
         }
 
-        /// <summary>
-        /// Updates the portfolio current positions and holdings 
-        /// from a FillEvent.
-        /// </summary>
-        /// <param name="fill"></param>
         public override void UpdateFill(FillEvent fill)
         {
             this.UpdatePositionsFromFill(fill);
             this.UpdateHoldingsFromFill(fill);
         }
 
-        /// <summary>
-        /// Adds a new record to the positions matrix for the current 
-        /// market data bar.This reflects the PREVIOUS bar, i.e.all
-        /// current market data at this stage is known (OLHCVI).
-        /// </summary>
-        /// <param name="market"></param>
         public override void UpdateTimeIndex(MarketEvent market)
         {
             this.AppendPositionHistory(market.CurrentTime);
             this.AppendHoldingHistory(market.CurrentTime);
         }
 
-        /// <summary>
-        /// Takes a FilltEvent object and updates the position matrix
-        /// to reflect the new position.
-        /// </summary>
-        /// <param name="fill">The FillEvent object to update the positions with.</param>
         private void UpdatePositionsFromFill(FillEvent fill)
         {
             var fillDir = GetNumericDirection(fill.Direction);
             this.currentPositions[fill.Symbol] += fillDir*fill.Quantity;
         }
 
-        /// <summary>
-        /// Takes a FillEvent object and updates the holdings matrix
-        ///  to reflect the holdings value.
-        /// </summary>
-        /// <param name="fill">The FillEvent object to update the holdings with.</param>
         private void UpdateHoldingsFromFill(FillEvent fill)
         {
             var fillDir = GetNumericDirection(fill.Direction);
@@ -121,11 +95,6 @@
             this.currentTotal -= (cost + fill.Comission);
         }
 
-        /// <summary>
-        /// Constructs the positions list using the start_date
-        /// to determine when the time index will begin.
-        /// </summary>
-        /// <returns></returns>
         private IDictionary<string, int> ConstructCurrentPositions()
         {
             return this.bars.Symbols.ToDictionary(symbol => symbol, qty => 0);
@@ -193,13 +162,6 @@
             }
         }
 
-        /// <summary>
-        /// Simply transacts an OrderEvent object as a constant quantity
-        /// sizing of the signal object, without risk management or
-        /// position sizing considerations.
-        /// </summary>
-        /// <param name="signal">The SignalEvent signal information.</param>
-        /// <returns></returns>
         private OrderEvent GenerateNaiveOrder(SignalEvent signal)
         {
             var symbol = signal.Symbol;
