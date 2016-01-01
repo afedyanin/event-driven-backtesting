@@ -112,7 +112,8 @@
         private void UpdateHoldingsFromFill(FillEvent fill)
         {
             var fillDir = GetNumericDirection(fill.Direction);
-            var cost = fillDir*fill.FillCost*fill.Quantity;
+            var closePrice = GetLastClosePrice(fill.Symbol);
+            var cost = fillDir*closePrice*fill.Quantity;
 
             this.currentHoldings[fill.Symbol] += cost;
             this.currentComission += fill.Comission;
@@ -165,9 +166,10 @@
 
             foreach (var symbol in marketHoldings.Keys)
             {
-                var lastBar = this.bars.GetLast(symbol);
-                var closePrice = (decimal) lastBar["<CLOSE>"];
-                var marketValue = this.currentPositions[symbol]*closePrice;
+                var qty = this.currentPositions[symbol];
+                var closePrice = GetLastClosePrice(symbol);
+                var marketValue = qty * closePrice;
+
                 marketHoldings[symbol] = marketValue;
                 total += marketValue;
             }
@@ -226,6 +228,13 @@
             }
 
             return null;
+        }
+
+        private decimal GetLastClosePrice(string symbol)
+        {
+            var lastBar = this.bars.GetLast(symbol);
+            var closePrice = (decimal)lastBar["<CLOSE>"];
+            return closePrice;
         }
 
         // TODO: Convert to extension
