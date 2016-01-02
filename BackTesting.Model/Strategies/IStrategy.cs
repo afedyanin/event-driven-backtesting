@@ -12,11 +12,11 @@
     /// the Strategy object is agnostic to the data source,
     /// since it obtains the bar tuples from a queue object.
     /// </summary>
-    public abstract class StrategyBase
+    public interface IStrategy
     {
         /// <summary>
         /// Provides the mechanisms to calculate the list of signals.
         /// </summary>
-        public abstract void CalculateSignals();
+        void CalculateSignals();
     }
 }

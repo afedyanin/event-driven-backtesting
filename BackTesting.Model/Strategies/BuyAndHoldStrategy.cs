@@ -12,14 +12,14 @@
     /// It is primarily used as a testing mechanism for the Strategy class
     /// as well as a benchmark upon which to compare other strategies.
     /// </summary>
-    public class BuyAndHoldStrategy : StrategyBase
+    public class BuyAndHoldStrategy : IStrategy
     {
         private readonly IEventBus eventBus;
-        private readonly DataHandlerBase bars;
+        private readonly IDataHandler bars;
 
         private readonly IDictionary<string, bool> bought;
 
-        public BuyAndHoldStrategy(IEventBus eventBus, DataHandlerBase dataHandler)
+        public BuyAndHoldStrategy(IEventBus eventBus, IDataHandler dataHandler)
         {
             this.eventBus = eventBus;
             this.bars = dataHandler;
@@ -32,7 +32,7 @@
         /// constantly long the market from the date of strategy
         /// initialisation.
         /// </summary>
-        public override void CalculateSignals()
+        public void CalculateSignals()
         {
             foreach (var symbol in this.bars.Symbols)
             {

@@ -9,12 +9,11 @@
     /// value of all instruments at a resolution of a "bar",
     /// i.e.secondly, minutely, 5-min, 30-min, 60 min or EOD.
     /// </summary>
-    public abstract class PortfolioBase
+    public interface IPortfolio
     {
-        public abstract void UpdateSignal(SignalEvent signal);
-        public abstract void UpdateFill(FillEvent fill);
-        public abstract void UpdateTimeIndex(MarketEvent market);
-
-        public abstract Frame<DateTime, string> GetHoldingHistory();
+        void UpdateSignal(SignalEvent signal);
+        void UpdateFill(FillEvent fill);
+        void UpdateTimeIndex(MarketEvent market);
+        Frame<DateTime, string> GetHoldingHistory();
     }
 }

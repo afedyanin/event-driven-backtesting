@@ -13,17 +13,17 @@
     /// i.e.without any risk management or position sizing.It is
     /// used to test simpler strategies such as BuyAndHoldStrategy.
     /// </summary>
-    public class NaivePortfolio : PortfolioBase
+    public class NaivePortfolio : IPortfolio
     {
         private readonly IEventBus eventBus;
-        private readonly DataHandlerBase bars;
+        private readonly IDataHandler bars;
 
         private readonly IDictionary<DateTime, Series<string, decimal>> holdingHistory;
         private readonly IDictionary<string, int> currentPositions;
         private decimal currentComission;
         private decimal currentCash;
 
-        public NaivePortfolio(IEventBus eventBus, DataHandlerBase bars, decimal initialCapital, DateTime startTime)
+        public NaivePortfolio(IEventBus eventBus, IDataHandler bars, decimal initialCapital, DateTime startTime)
         {
             this.eventBus = eventBus;
             this.bars = bars;
@@ -34,12 +34,12 @@
             this.currentCash = initialCapital;
         }
 
-        public override Frame<DateTime, string> GetHoldingHistory()
+        public Frame<DateTime, string> GetHoldingHistory()
         {
             return Frame.FromRows(this.holdingHistory);
         }
 
-        public override void UpdateSignal(SignalEvent signal)
+        public void UpdateSignal(SignalEvent signal)
         {
             var orderEvent = this.GenerateNaiveOrder(signal);
             if (orderEvent != null)
@@ -48,7 +48,7 @@
             }
         }
 
-        public override void UpdateFill(FillEvent fill)
+        public void UpdateFill(FillEvent fill)
         {
             var fillDir = GetNumericDirection(fill.Direction);
             var closePrice = GetLastClosePrice(fill.Symbol);
@@ -59,7 +59,7 @@
             this.currentCash -= (cost + fill.Comission);
         }
 
-        public override void UpdateTimeIndex(MarketEvent market)
+        public void UpdateTimeIndex(MarketEvent market)
         {
             var sb = new SeriesBuilder<string, decimal>();
 

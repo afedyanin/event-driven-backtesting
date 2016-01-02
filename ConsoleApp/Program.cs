@@ -62,11 +62,9 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 
             var marketData = ComposedMarketData.CreateFromCsv(dataSource);
             var bars = new HistoricDataHandler(eventBus, marketData);
-
             var strategy = new BuyAndHoldStrategy(eventBus, bars);
             var executionHandler = new SimulatedExecutionHandler(eventBus);
             var portfolio = new NaivePortfolio(eventBus, bars, 10000m, DateTime.Now);
-
             var backTest = new BackTest(eventBus, bars, strategy, portfolio, executionHandler);
 
             backTest.SimulateTrading();

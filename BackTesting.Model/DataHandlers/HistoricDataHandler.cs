@@ -13,7 +13,7 @@
     /// to obtain the "latest" bar in a manner identical to a live
     /// trading interface. 
     /// </summary>
-    public class HistoricDataHandler : DataHandlerBase
+    public class HistoricDataHandler : IDataHandler
     {
         private readonly IEventBus eventBus;
         private readonly IMarketData marketData;
@@ -22,9 +22,9 @@
 
         private bool continueBacktest;
 
-        public override ICollection<string> Symbols => this.marketData.Symbols;
+        public ICollection<string> Symbols => this.marketData.Symbols;
 
-        public override bool ContinueBacktest => this.continueBacktest;
+        public bool ContinueBacktest => this.continueBacktest;
 
         public HistoricDataHandler(IEventBus eventBus, IMarketData marketData)
         {
@@ -35,13 +35,13 @@
             this.latestBars = new Dictionary<string, Frame<DateTime, string>>();
         }
 
-        public override IEnumerable<ObjectSeries<string>> GetLatestBars(string symbol, int n = 1)
+        public IEnumerable<ObjectSeries<string>> GetLatestBars(string symbol, int n = 1)
         {
             var bars = this.latestBars[symbol];
             return bars.Rows.Values.Reverse().Take(n);
         }
 
-        public override ObjectSeries<string> GetLast(string symbol)
+        public ObjectSeries<string> GetLast(string symbol)
         {
             var bars = this.latestBars[symbol];
             return bars.Rows.Values.Reverse().First();
@@ -49,7 +49,7 @@
 
         // Pushes the latest bar to the latestBars structure
         // for all symbols in the symbol list.
-        public override void UpdateBars()
+        public void UpdateBars()
         {
             if (!this.ContinueBacktest)
             {

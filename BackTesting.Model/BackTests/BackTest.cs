@@ -18,20 +18,20 @@
         private int fills;
 
         private readonly IEventBus eventBus;
-        private readonly DataHandlerBase dataHandler;
-        private readonly StrategyBase strategy;
-        private readonly PortfolioBase portfolio;
-        private readonly ExecutionHandlerBase executionHandler;
+        private readonly IDataHandler bars;
+        private readonly IStrategy strategy;
+        private readonly IPortfolio portfolio;
+        private readonly IExecutionHandler executionHandler;
 
         public BackTest(
-            IEventBus eventBus, 
-            DataHandlerBase dataHandler, 
-            StrategyBase strategy, 
-            PortfolioBase portfolio, 
-            ExecutionHandlerBase executionHandler)
+            IEventBus eventBus,
+            IDataHandler bars, 
+            IStrategy strategy, 
+            IPortfolio portfolio, 
+            IExecutionHandler executionHandler)
         {
             this.eventBus = eventBus;
-            this.dataHandler = dataHandler;
+            this.bars = bars;
             this.strategy = strategy;
             this.portfolio = portfolio;
             this.executionHandler = executionHandler;
@@ -55,10 +55,10 @@
             {
                 i++;
                 Console.WriteLine("Iteration {0}", i);
-                if (this.dataHandler.ContinueBacktest)
+                if (this.bars.ContinueBacktest)
                 {
                     // Console.WriteLine("Updating bars");
-                    this.dataHandler.UpdateBars();
+                    this.bars.UpdateBars();
                 }
                 else
                 {
@@ -77,9 +77,10 @@
                     switch (evt.EventType)
                     {
                         case EventType.Market:
-                            // Console.WriteLine("Market event");
+                            var mEvt = (MarketEvent) evt;
+                            Console.WriteLine("Market event => {0}", mEvt.CurrentTime);
                             this.strategy.CalculateSignals();
-                            this.portfolio.UpdateTimeIndex((MarketEvent)evt);
+                            this.portfolio.UpdateTimeIndex(mEvt);
                             break;
                         case EventType.Signal:
                             // Console.WriteLine("Signal event");

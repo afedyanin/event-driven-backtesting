@@ -13,9 +13,9 @@
     /// before implementation with a more sophisticated execution
     /// handler.
     /// </summary>
-    public class SimulatedExecutionHandler : ExecutionHandlerBase
+    public class SimulatedExecutionHandler : IExecutionHandler
     {
-        private IEventBus eventBus;
+        private readonly IEventBus eventBus;
 
         public SimulatedExecutionHandler(IEventBus eventBus)
         {
@@ -27,7 +27,7 @@
         /// i.e.without any latency, slippage or fill ratio problems.
         /// </summary>
         /// <param name="orderEvent"></param>
-        public override void ExecuteOrder(OrderEvent orderEvent)
+        public void ExecuteOrder(OrderEvent orderEvent)
         {
             var fillEvent = new FillEvent(
                 DateTime.Now.ToString(CultureInfo.InvariantCulture), 
