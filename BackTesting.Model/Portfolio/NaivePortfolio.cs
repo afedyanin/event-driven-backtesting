@@ -18,37 +18,20 @@
         private readonly IEventBus eventBus;
         private readonly DataHandlerBase bars;
 
+        private readonly IDictionary<DateTime, Series<string, decimal>> holdingHistory;
         private readonly IDictionary<string, int> currentPositions;
-        private readonly IDictionary<string, decimal> currentHoldings;
-
         private decimal currentComission;
         private decimal currentCash;
-        private decimal currentTotal;
-
-        private readonly IDictionary<DateTime, Series<string, decimal>> positionHistory; 
-        private readonly IDictionary<DateTime, Series<string, decimal>> holdingHistory; 
 
         public NaivePortfolio(IEventBus eventBus, DataHandlerBase bars, decimal initialCapital, DateTime startTime)
         {
             this.eventBus = eventBus;
             this.bars = bars;
 
-            this.currentPositions = this.ConstructCurrentPositions();
-
-            this.currentHoldings = this.ConstructCurrentHoldings();
+            this.holdingHistory = new Dictionary<DateTime, Series<string, decimal>>();
+            this.currentPositions = this.bars.Symbols.ToDictionary(symbol => symbol, qty => 0); ;
             this.currentComission = decimal.Zero;
             this.currentCash = initialCapital;
-            this.currentTotal = initialCapital;
-
-            this.positionHistory = new Dictionary<DateTime, Series<string, decimal>>();
-            this.AppendPositionHistory(startTime);
-
-            this.holdingHistory = new Dictionary<DateTime, Series<string, decimal>>();
-        }
-
-        public override Frame<DateTime, string> GetPositionHistory()
-        {
-            return Frame.FromRows(this.positionHistory);
         }
 
         public override Frame<DateTime, string> GetHoldingHistory()
@@ -67,68 +50,21 @@
 
         public override void UpdateFill(FillEvent fill)
         {
-            this.UpdatePositionsFromFill(fill);
-            this.UpdateHoldingsFromFill(fill);
+            var fillDir = GetNumericDirection(fill.Direction);
+            var closePrice = GetLastClosePrice(fill.Symbol);
+            var cost = fillDir * closePrice * fill.Quantity;
+
+            this.currentPositions[fill.Symbol] += fillDir * fill.Quantity;
+            this.currentComission += fill.Comission;
+            this.currentCash -= (cost + fill.Comission);
         }
 
         public override void UpdateTimeIndex(MarketEvent market)
         {
-            this.AppendPositionHistory(market.CurrentTime);
-            this.AppendHoldingHistory(market.CurrentTime);
-        }
-
-        private void UpdatePositionsFromFill(FillEvent fill)
-        {
-            var fillDir = GetNumericDirection(fill.Direction);
-            this.currentPositions[fill.Symbol] += fillDir*fill.Quantity;
-        }
-
-        private void UpdateHoldingsFromFill(FillEvent fill)
-        {
-            var fillDir = GetNumericDirection(fill.Direction);
-            var closePrice = GetLastClosePrice(fill.Symbol);
-            var cost = fillDir*closePrice*fill.Quantity;
-
-            this.currentHoldings[fill.Symbol] += cost;
-            this.currentComission += fill.Comission;
-            this.currentCash -= (cost + fill.Comission);
-            this.currentTotal -= (cost + fill.Comission);
-        }
-
-        private IDictionary<string, int> ConstructCurrentPositions()
-        {
-            return this.bars.Symbols.ToDictionary(symbol => symbol, qty => 0);
-        }
-
-        private void AppendPositionHistory(DateTime dateTime)
-        {
             var sb = new SeriesBuilder<string, decimal>();
 
-            foreach (var kvp in this.currentPositions)
-            {
-                sb.Add(kvp.Key, kvp.Value);
-            }
+            var marketHoldings = this.bars.Symbols.ToDictionary(symbol => symbol, cost => decimal.Zero); 
 
-            if (this.positionHistory.ContainsKey(dateTime))
-            {
-                this.positionHistory[dateTime] = sb.Series;
-            }
-            else
-            {
-                this.positionHistory.Add(dateTime, sb.Series);
-            }
-        }
-
-        private IDictionary<string, decimal> ConstructCurrentHoldings()
-        {
-            return this.bars.Symbols.ToDictionary(symbol => symbol, cost => decimal.Zero);
-        }
-
-        private void AppendHoldingHistory(DateTime dateTime) 
-        {
-            var sb = new SeriesBuilder<string, decimal>();
-
-            var marketHoldings = this.ConstructCurrentHoldings();
             var cash = this.currentCash;
             var commision = this.currentComission;
             var total = this.currentCash;
@@ -151,6 +87,8 @@
             sb.Add("Comission", commision);
             sb.Add("Cash", cash);
             sb.Add("Total", total);
+
+            var dateTime = market.CurrentTime;
 
             if (this.holdingHistory.ContainsKey(dateTime))
             {

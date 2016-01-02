@@ -15,7 +15,6 @@
         public abstract void UpdateFill(FillEvent fill);
         public abstract void UpdateTimeIndex(MarketEvent market);
 
-        public abstract Frame<DateTime, string> GetPositionHistory();
         public abstract Frame<DateTime, string> GetHoldingHistory();
     }
 }
