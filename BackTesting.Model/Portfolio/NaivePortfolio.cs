@@ -69,7 +69,7 @@
             var commision = this.currentComission;
             var total = this.currentCash;
 
-            foreach (var symbol in marketHoldings.Keys)
+            foreach (var symbol in this.bars.Symbols)
             {
                 var qty = this.currentPositions[symbol];
                 var closePrice = GetLastClosePrice(symbol);

@@ -1,12 +1,15 @@
 ﻿namespace ConsoleApp
 {
     using System;
-    using System.Collections;
     using System.Collections.Generic;
+    using BackTesting.Model.BackTests;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.DataSource.Csv;
     using BackTesting.Model.Entities;
-    using Deedle;
+    using BackTesting.Model.Events;
+    using BackTesting.Model.ExecutionHandlers;
+    using BackTesting.Model.Portfolio;
+    using BackTesting.Model.Strategies;
 
     class Program
     {
@@ -52,72 +55,24 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 
             SetupScreen();
 
+            var eventBus = new QueuedEventBus();
+
             var dataSource = new StringCsvDataSource(CsvData);
             // var dataSource = new FileCsvDataSource("Data", new[] { "sber", "vtbr" });
 
             var marketData = ComposedMarketData.CreateFromCsv(dataSource);
-            var bars = new HistoricDataHandler(null, marketData);
+            var bars = new HistoricDataHandler(eventBus, marketData);
 
-            var dict = new Dictionary<DateTime, Series<string, decimal>>();
+            var strategy = new BuyAndHoldStrategy(eventBus, bars);
+            var executionHandler = new SimulatedExecutionHandler(eventBus);
+            var portfolio = new NaivePortfolio(eventBus, bars, 10000m, DateTime.Now);
 
-            bars.UpdateBars();
-            UpdateDictionary(dict, bars);
-            bars.UpdateBars();
-            UpdateDictionary(dict, bars);
-            bars.UpdateBars();
-            UpdateDictionary(dict, bars);
-            bars.UpdateBars();
-            UpdateDictionary(dict, bars);
-            bars.UpdateBars();
-            UpdateDictionary(dict, bars);
+            var backTest = new BackTest(eventBus, bars, strategy, portfolio, executionHandler);
 
-            var frame = Frame.FromRows(dict);
-            frame.Print();
+            backTest.SimulateTrading();
 
-
-/*
-            PrintAllRows(bars.GetLatestBars("sber", 3));
-            Console.WriteLine("-----------------------\n");
-
-            bars.UpdateBars();
-            bars.UpdateBars();
-
-            PrintAllRows(bars.GetLatestBars("sber", 3));
-            Console.WriteLine("-----------------------\n");
-*/
-
+            Console.WriteLine("BackTest end.");
             Console.ReadLine();
-        }
-
-        private static void UpdateDictionary(IDictionary<DateTime, Series<string, decimal>> dict, HistoricDataHandler bars)
-        {
-            var lastSber = bars.GetLast("sber");
-            var lastVtbr = bars.GetLast("vtbr");
-            var currentTime = (DateTime)lastSber["DateTime"];
-
-            var sb = new SeriesBuilder<string, decimal>();
-            sb.Add("sber", (decimal)lastSber["<CLOSE>"] * 10);
-            sb.Add("vtbr", (decimal)lastVtbr["<CLOSE>"] * 20);
-
-            dict.Add(currentTime, sb.Series);
-        }
-
-        private static void PrintAllRows(IEnumerable<ObjectSeries<string>> rows)
-        {
-            foreach (var row in rows)
-            {
-                PrintRow(row);
-            }
-        }
-
-        private static void PrintRow(ObjectSeries<string> row)
-        {
-            var time = (DateTime)row["DateTime"];
-            var open = (decimal)row["<OPEN>"];
-            var close = (decimal)row["<CLOSE>"];
-            var volume = (int)row["<VOL>"];
-
-            Console.WriteLine($"{time} O={open} C={close} V={volume}");
         }
 
         public static void SetupScreen()
@@ -128,13 +83,5 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
             Console.WindowHeight = CONST_ScreenHeight;
             Console.BufferHeight = CONST_ScreenHeight;
         }
-
-        #region Old stuff
-        /*
-                var oe = new OrderEvent("SBER", OrderType.Market, 10, Direction.Buy);
-                Console.WriteLine(oe);
-                    Console.ReadLine();
-        */
-        #endregion
     }
 }

@@ -7,6 +7,7 @@
     using BackTesting.Model.ExecutionHandlers;
     using BackTesting.Model.Portfolio;
     using BackTesting.Model.Strategies;
+    using Deedle;
 
     public class BackTest
     {
@@ -16,11 +17,11 @@
         private int orders;
         private int fills;
 
-        private IEventBus eventBus;
-        private DataHandlerBase dataHandler;
-        private StrategyBase strategy;
-        private PortfolioBase portfolio;
-        private ExecutionHandlerBase executionHandler;
+        private readonly IEventBus eventBus;
+        private readonly DataHandlerBase dataHandler;
+        private readonly StrategyBase strategy;
+        private readonly PortfolioBase portfolio;
+        private readonly ExecutionHandlerBase executionHandler;
 
         public BackTest(
             IEventBus eventBus, 
@@ -56,6 +57,7 @@
                 Console.WriteLine("Iteration {0}", i);
                 if (this.dataHandler.ContinueBacktest)
                 {
+                    // Console.WriteLine("Updating bars");
                     this.dataHandler.UpdateBars();
                 }
                 else
@@ -75,18 +77,22 @@
                     switch (evt.EventType)
                     {
                         case EventType.Market:
+                            // Console.WriteLine("Market event");
                             this.strategy.CalculateSignals();
                             this.portfolio.UpdateTimeIndex((MarketEvent)evt);
                             break;
                         case EventType.Signal:
+                            // Console.WriteLine("Signal event");
                             this.signals++;
                             this.portfolio.UpdateSignal((SignalEvent)evt);
                             break;
                         case EventType.Order:
+                            // Console.WriteLine("Order event");
                             this.orders++;
                             this.executionHandler.ExecuteOrder((OrderEvent)evt);
                             break;
                         case EventType.Fill:
+                            // Console.WriteLine("Fill event");
                             this.fills++;
                             this.portfolio.UpdateFill((FillEvent)evt);
                             break;
@@ -103,8 +109,13 @@
         private void OutputPerformance()
         {
             Console.WriteLine("Creating summary stats ...");
-            Console.WriteLine("Creating equity curve ...");
 
+            var res = this.portfolio.GetHoldingHistory();
+
+            Console.WriteLine("---------------------------");
+            res.Print();
+
+            Console.WriteLine("---------------------------");
             Console.WriteLine("Signals: {0}", this.signals);
             Console.WriteLine("Orders: {0}", this.orders);
             Console.WriteLine("Fills: {0}", this.fills);
