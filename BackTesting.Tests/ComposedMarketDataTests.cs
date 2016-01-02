@@ -1,37 +1,33 @@
-﻿namespace ConsoleApp
+﻿namespace BackTesting.Tests
 {
     using System;
     using System.Collections.Generic;
-    using BackTesting.Model.BackTests;
-    using BackTesting.Model.DataHandlers;
     using BackTesting.Model.DataSource.Csv;
     using BackTesting.Model.Entities;
-    using BackTesting.Model.Events;
-    using BackTesting.Model.ExecutionHandlers;
-    using BackTesting.Model.Portfolio;
-    using BackTesting.Model.Strategies;
+    using Deedle;
+    using NUnit.Framework;
 
-    class Program
+    [TestFixture]
+    public class ComposedMarketDataTests
     {
-        private const int CONST_ScreenWidth = 150;
-        private const int CONST_ScreenHeight = 40;
-
         #region CSV data sample
-        private static readonly IDictionary<string, string> CsvData = new Dictionary<string, string>() {
-                {"sber", @"
+
+        private static readonly IDictionary<string, string> CsvData = new Dictionary<string, string>()
+        {
+            {"sber", @"
 <TICKER>,<PER>,<DATE>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>
 SBER,1,20151123,100100,106.8500000,106.8600000,106.1400000,106.2900000,655780
+SBER,1,20151123,100800,106.2900000,106.5200000,106.2400000,106.4000000,384210
 SBER,1,20151123,100200,106.2700000,106.3300000,106.1400000,106.2600000,548880
 SBER,1,20151123,100300,106.2600000,106.2600000,105.9300000,106.0500000,1028870
 SBER,1,20151123,100400,106.1100000,106.3000000,106.0500000,106.2800000,371940
 SBER,1,20151123,100500,106.2600000,106.2800000,106.1300000,106.2200000,478220
+SBER,1,20151123,100900,106.3900000,106.4500000,106.3000000,106.4500000,218000
 SBER,1,20151123,100600,106.2100000,106.2300000,106.0200000,106.1100000,281740
 SBER,1,20151123,100700,106.1500000,106.3000000,106.0500000,106.2600000,138440
-SBER,1,20151123,100800,106.2900000,106.5200000,106.2400000,106.4000000,384210
-SBER,1,20151123,100900,106.3900000,106.4500000,106.3000000,106.4500000,218000
 SBER,1,20151123,101000,106.4700000,106.4700000,106.3400000,106.4100000,122320
 "},
-                {"vtbr", @"
+            {"vtbr", @"
 <TICKER>,<PER>,<DATE>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>
 VTBR,1,20151120,184800,0.0760100,0.0760100,0.0760100,0.0760100,5570000
 VTBR,1,20151120,184900,0.0760100,0.0760100,0.0760100,0.0760100,3040000
@@ -46,43 +42,44 @@ VTBR,1,20151123,100800,0.0758800,0.0758800,0.0758400,0.0758400,2440000
 VTBR,1,20151123,100900,0.0758100,0.0758900,0.0758000,0.0758100,13090000
 VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 "}
-            };
+        };
+
         #endregion
 
-        static void Main(string[] args)
+        [Test]
+        public void LoadFormStringsHasValidRowKeys()
         {
-            Console.WriteLine("Starting...");
-
-            SetupScreen();
-            DoMainBackTest();
-
-            Console.ReadLine();
-        }
-
-        public static void DoMainBackTest()
-        {
-            var eventBus = new QueuedEventBus();
             var dataSource = new StringCsvDataSource(CsvData);
-            // var dataSource = new FileCsvDataSource("Data", new[] { "sber", "vtbr" });
-            var marketData = ComposedMarketData.CreateFromCsv(dataSource);
-            var bars = new HistoricDataHandler(eventBus, marketData);
-            var strategy = new BuyAndHoldStrategy(eventBus, bars);
-            var executionHandler = new SimulatedExecutionHandler(eventBus);
-            var portfolio = new NaivePortfolio(eventBus, bars, 10000m, DateTime.Now);
-            var backTest = new BackTest(eventBus, bars, strategy, portfolio, executionHandler);
+            var mdata = ComposedMarketData.CreateFromCsv(dataSource);
+            var rowKeys = mdata.RowKeys;
 
-            backTest.SimulateTrading();
+            foreach (var dateTime in rowKeys)
+            {
+                Console.WriteLine("key={0}", dateTime);
+            }
 
-            Console.WriteLine("BackTest end.");
+            DateTime? prev = null;
+            foreach (var dateTime in rowKeys)
+            {
+                if (prev == null)
+                {
+                    prev = dateTime;
+                    continue;
+                }
+
+                Assert.IsTrue(prev <= dateTime);
+            }
         }
 
-        public static void SetupScreen()
+        [Test]
+        public void LoadFormStringsHasValidBars()
         {
-            Console.WindowWidth = CONST_ScreenWidth;
-            Console.BufferWidth = CONST_ScreenWidth;
+            var dataSource = new StringCsvDataSource(CsvData);
+            var mdata = ComposedMarketData.CreateFromCsv(dataSource);
 
-            Console.WindowHeight = CONST_ScreenHeight;
-            Console.BufferHeight = CONST_ScreenHeight;
+            var bars = mdata.GetBars("sber");
+
+            bars.Print();
         }
     }
 }

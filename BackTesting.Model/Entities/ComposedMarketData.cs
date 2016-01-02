@@ -35,7 +35,7 @@
             return !this.bars.ContainsKey(symbol) ? null : this.bars[symbol];
         }
 
-        public void ComposeBars(string symbol, Frame<DateTime, string> frame)
+        private void ComposeBars(string symbol, Frame<DateTime, string> frame)
         {
             if (this.bars.ContainsKey(symbol))
             {
@@ -52,7 +52,7 @@
                 this.bars.Add(symbol, frame);
             }
 
-            this.RowKeys = UnionRowKeys(this.RowKeys, this.bars[symbol].RowKeys).ToList();
+            this.RowKeys = UnionRowKeys(this.RowKeys, this.bars[symbol].RowKeys).OrderBy(k => k).ToList();
             this.bars = ReindexDataFrames(this.bars, this.RowKeys);
         }
 

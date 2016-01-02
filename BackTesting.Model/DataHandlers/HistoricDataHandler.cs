@@ -65,7 +65,7 @@
             }
 
             this.AppendLatestBars(nextTime.Value);
-            // Console.WriteLine("Creating new market event {0}", nextTime.Value);
+            Console.WriteLine("Creating new market event {0}", nextTime.Value);
             this.eventBus.Put(new MarketEvent(nextTime.Value));
         }
 
