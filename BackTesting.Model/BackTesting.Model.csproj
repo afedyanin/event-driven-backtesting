@@ -37,6 +37,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackTests\BackTest.cs" />
     <Compile Include="DataHandlers\DataHandlerBase.cs" />
     <Compile Include="DataHandlers\HistoricDataHandler.cs" />
     <Compile Include="Entities\ComposedMarketData.cs" />
@@ -52,6 +53,7 @@
     <Compile Include="Enums\TransactionDirection.cs" />
     <Compile Include="Events\OrderEvent.cs" />
     <Compile Include="Enums\OrderType.cs" />
+    <Compile Include="Events\QueuedEventBus.cs" />
     <Compile Include="Events\SignalEvent.cs" />
     <Compile Include="Enums\SignalType.cs" />
     <Compile Include="ExecutionHandlers\ExecutionHandlerBase.cs" />

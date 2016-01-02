@@ -16,6 +16,8 @@
     {
         public abstract ICollection<string> Symbols { get; }
 
+        public abstract bool ContinueBacktest { get; }
+
         /// <summary>
         /// Returns the last N bars from the latest_symbol list, or fewer if less bars are available.
         /// </summary>

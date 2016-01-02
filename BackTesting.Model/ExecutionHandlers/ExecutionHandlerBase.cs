@@ -21,6 +21,5 @@
         /// </summary>
         /// <param name="orderEvent">Contains an Event object with order information.</param>
         public abstract void ExecuteOrder(OrderEvent orderEvent);
-
     }
 }

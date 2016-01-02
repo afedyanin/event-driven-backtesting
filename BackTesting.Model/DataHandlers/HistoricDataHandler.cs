@@ -20,14 +20,17 @@
         private readonly IDictionary<string, Frame<DateTime, string>> latestBars;
         private readonly IEnumerator<DateTime> timeEnumerator;
 
+        private bool continueBacktest;
+
         public override ICollection<string> Symbols => this.marketData.Symbols;
-        public bool ContinueBacktest { get; set; }
+
+        public override bool ContinueBacktest => this.continueBacktest;
 
         public HistoricDataHandler(IEventBus eventBus, IMarketData marketData)
         {
             this.eventBus = eventBus;
             this.marketData = marketData;
-            this.ContinueBacktest = true;
+            this.continueBacktest = true;
             this.timeEnumerator = this.marketData.RowKeys.GetEnumerator();
             this.latestBars = new Dictionary<string, Frame<DateTime, string>>();
         }
@@ -57,7 +60,7 @@
 
             if (nextTime == null)
             {
-                this.ContinueBacktest = false;
+                this.continueBacktest = false;
                 return;
             }
 
