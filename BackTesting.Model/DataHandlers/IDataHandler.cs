@@ -16,8 +16,7 @@
     {
         ICollection<string> Symbols { get; }
         bool ContinueBacktest { get; }
-        IEnumerable<ObjectSeries<string>> GetLatestBars(string symbol, int n = 1);
         ObjectSeries<string> GetLast(string symbol);
-        void UpdateBars();
+        void Update();
     }
 }

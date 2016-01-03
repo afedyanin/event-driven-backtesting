@@ -38,22 +38,18 @@
             {
                 if (this.bought[symbol])
                 {
-                    // Console.WriteLine("{0} already bought", symbol);
                     continue;
                 }
 
                 var lastBar = this.bars.GetLast(symbol);
 
-                // TODO: Check missing values
                 if (lastBar == null)
                 {
                     // No market data
-                    // Console.WriteLine("No market data");
                     continue;
                 }
 
                 // Create signal
-                // Console.WriteLine("Creating signal for {0}", symbol);
                 var time = (DateTime)lastBar["DateTime"];
                 var signal = new SignalEvent(symbol, time, SignalType.Long);
                 this.eventBus.Put(signal);

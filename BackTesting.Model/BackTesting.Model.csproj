@@ -40,11 +40,9 @@
     <Compile Include="BackTests\BackTest.cs" />
     <Compile Include="DataHandlers\IDataHandler.cs" />
     <Compile Include="DataHandlers\HistoricDataHandler.cs" />
-    <Compile Include="Entities\ComposedMarketData.cs" />
-    <Compile Include="DataSource\Csv\CsvDataSource.cs" />
-    <Compile Include="DataSource\Csv\FileCsvDataSource.cs" />
-    <Compile Include="DataSource\Csv\StringCsvDataSource.cs" />
-    <Compile Include="Entities\IMarketData.cs" />
+    <Compile Include="MarketData\ComposedMarketData.cs" />
+    <Compile Include="MarketData\CsvDataSource.cs" />
+    <Compile Include="MarketData\IMarketData.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Enums\EventType.cs" />
     <Compile Include="Events\FillEvent.cs" />

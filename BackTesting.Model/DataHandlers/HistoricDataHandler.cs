@@ -2,8 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
-    using BackTesting.Model.Entities;
+    using BackTesting.Model.MarketData;
     using Deedle;
     using Events;
 
@@ -17,89 +16,63 @@
     {
         private readonly IEventBus eventBus;
         private readonly IMarketData marketData;
-        private readonly IDictionary<string, Frame<DateTime, string>> latestBars;
         private readonly IEnumerator<DateTime> timeEnumerator;
 
-        private bool continueBacktest;
+        private DateTime? currentTime;
+
+        public bool ContinueBacktest { get; private set; }
 
         public ICollection<string> Symbols => this.marketData.Symbols;
-
-        public bool ContinueBacktest => this.continueBacktest;
 
         public HistoricDataHandler(IEventBus eventBus, IMarketData marketData)
         {
             this.eventBus = eventBus;
             this.marketData = marketData;
-            this.continueBacktest = true;
+            this.ContinueBacktest = true;
             this.timeEnumerator = this.marketData.RowKeys.GetEnumerator();
-            this.latestBars = new Dictionary<string, Frame<DateTime, string>>();
-        }
-
-        public IEnumerable<ObjectSeries<string>> GetLatestBars(string symbol, int n = 1)
-        {
-            var bars = this.latestBars[symbol];
-            return bars.Rows.Values.Reverse().Take(n);
+            this.currentTime = null;
         }
 
         public ObjectSeries<string> GetLast(string symbol)
         {
-            var bars = this.latestBars[symbol];
-            return bars.Rows.Values.Reverse().First();
+            var bars = this.marketData.Bars[symbol];
+
+            if (bars == null)
+            {
+                return null;
+            }
+
+            if (!this.currentTime.HasValue)
+            {
+                return null;
+            }
+
+            return bars.Rows.Get(this.currentTime.Value, Lookup.ExactOrSmaller);
         }
 
-        // Pushes the latest bar to the latestBars structure
-        // for all symbols in the symbol list.
-        public void UpdateBars()
+        public void Update()
         {
             if (!this.ContinueBacktest)
             {
                 return;
             }
 
-            var nextTime = this.GetNextTime();
+            this.currentTime = this.GetNextTime();
 
-            if (nextTime == null)
+            if (this.currentTime.HasValue)
             {
-                this.continueBacktest = false;
-                return;
+                this.eventBus.Put(new MarketEvent(this.currentTime.Value));
             }
-
-            this.AppendLatestBars(nextTime.Value);
-            Console.WriteLine("Creating new market event {0}", nextTime.Value);
-            this.eventBus.Put(new MarketEvent(nextTime.Value));
+            else
+            {
+                this.ContinueBacktest = false;
+            }
         }
 
         private DateTime? GetNextTime()
         {
             var moved = this.timeEnumerator.MoveNext();
             return moved ? this.timeEnumerator.Current : (DateTime?)null;
-        }
-
-        private void AppendLatestBars(DateTime nextTime)
-        {
-            foreach (var symbol in this.Symbols)
-            {
-                var bar = this.marketData.GetBars(symbol).Rows[nextTime];
-
-                if (!this.latestBars.ContainsKey(symbol))
-                {
-                    this.latestBars.Add(symbol, Frame.CreateEmpty<DateTime, string>());
-                }
-
-                this.latestBars[symbol] = this.AppendBar(this.latestBars[symbol], nextTime, bar);
-            }
-        }
-
-        private Frame<DateTime, string> AppendBar(Frame<DateTime, string> targetFrame, DateTime key, ObjectSeries<string> bar)
-        {
-            var newData = new List<KeyValuePair<DateTime, ObjectSeries<string>>>()
-            {
-                new KeyValuePair<DateTime, ObjectSeries<string>>(key, bar)
-            };
-
-            var series = new Series<DateTime, ObjectSeries<string>>(newData);
-            var merged = targetFrame.Rows.Merge(series, UnionBehavior.PreferRight);
-            return Frame.FromRows(merged).SortRowsByKey();
         }
     }
 }

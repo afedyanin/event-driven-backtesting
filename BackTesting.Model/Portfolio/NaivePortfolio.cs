@@ -23,7 +23,7 @@
         private decimal currentComission;
         private decimal currentCash;
 
-        public NaivePortfolio(IEventBus eventBus, IDataHandler bars, decimal initialCapital, DateTime startTime)
+        public NaivePortfolio(IEventBus eventBus, IDataHandler bars, decimal initialCapital)
         {
             this.eventBus = eventBus;
             this.bars = bars;
@@ -52,8 +52,13 @@
         {
             var fillDir = GetNumericDirection(fill.Direction);
             var closePrice = GetLastClosePrice(fill.Symbol);
-            var cost = fillDir * closePrice * fill.Quantity;
 
+            if (closePrice == null)
+            {
+                throw new InvalidOperationException($"Cannot find last price for {fill.Symbol}");
+            }
+
+            var cost = fillDir * closePrice.Value * fill.Quantity;
             this.currentPositions[fill.Symbol] += fillDir * fill.Quantity;
             this.currentComission += fill.Comission;
             this.currentCash -= (cost + fill.Comission);
@@ -73,8 +78,18 @@
             {
                 var qty = this.currentPositions[symbol];
                 var closePrice = GetLastClosePrice(symbol);
-                var marketValue = qty * closePrice;
 
+                if (closePrice == null)
+                {
+                    if (qty != 0)
+                    {
+                        throw new InvalidOperationException($"Unknown close price for {symbol} with position qty={qty}.");
+                    }
+
+                    closePrice = decimal.Zero;
+                }
+
+                var marketValue = qty * closePrice.Value;
                 marketHoldings[symbol] = marketValue;
                 total += marketValue;
             }
@@ -108,33 +123,31 @@
 
             var marketQuantity = (int)Math.Floor(100*strength);
             var currentQuantity = (int)this.currentPositions[symbol];
-            var orderType = OrderType.Market;
 
             if (direction == SignalType.Long && currentQuantity == 0)
             {
-                return new OrderEvent(symbol, orderType, marketQuantity, TransactionDirection.Buy);
+                return new OrderEvent(symbol, OrderType.Market, marketQuantity, TransactionDirection.Buy);
             }
             if (direction == SignalType.Short && currentQuantity == 0)
             {
-                return new OrderEvent(symbol, orderType, marketQuantity, TransactionDirection.Sell);
+                return new OrderEvent(symbol, OrderType.Market, marketQuantity, TransactionDirection.Sell);
             }
             if (direction == SignalType.Exit && currentQuantity > 0)
             {
-                return new OrderEvent(symbol, orderType, Math.Abs(currentQuantity), TransactionDirection.Sell);
+                return new OrderEvent(symbol, OrderType.Market, Math.Abs(currentQuantity), TransactionDirection.Sell);
             }
             if (direction == SignalType.Exit && currentQuantity < 0)
             {
-                return new OrderEvent(symbol, orderType, Math.Abs(currentQuantity), TransactionDirection.Buy);
+                return new OrderEvent(symbol, OrderType.Market, Math.Abs(currentQuantity), TransactionDirection.Buy);
             }
 
             return null;
         }
 
-        private decimal GetLastClosePrice(string symbol)
+        private decimal? GetLastClosePrice(string symbol)
         {
             var lastBar = this.bars.GetLast(symbol);
-            var closePrice = (decimal)lastBar["<CLOSE>"];
-            return closePrice;
+            return (decimal?) lastBar?["<CLOSE>"];
         }
 
         // TODO: Convert to extension

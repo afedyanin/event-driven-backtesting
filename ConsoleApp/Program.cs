@@ -4,10 +4,9 @@
     using System.Collections.Generic;
     using BackTesting.Model.BackTests;
     using BackTesting.Model.DataHandlers;
-    using BackTesting.Model.DataSource.Csv;
-    using BackTesting.Model.Entities;
     using BackTesting.Model.Events;
     using BackTesting.Model.ExecutionHandlers;
+    using BackTesting.Model.MarketData;
     using BackTesting.Model.Portfolio;
     using BackTesting.Model.Strategies;
 
@@ -62,13 +61,13 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
         public static void DoMainBackTest()
         {
             var eventBus = new QueuedEventBus();
-            var dataSource = new StringCsvDataSource(CsvData);
-            // var dataSource = new FileCsvDataSource("Data", new[] { "sber", "vtbr" });
-            var marketData = ComposedMarketData.CreateFromCsv(dataSource);
+            // var dataSource = CsvDataSource.CreateFromFiles("Data", new[] { "sber", "vtbr" });
+            var dataSource = CsvDataSource.CreateFormStrings(CsvData);
+            var marketData = new ComposedMarketData(dataSource.Frames);
             var bars = new HistoricDataHandler(eventBus, marketData);
             var strategy = new BuyAndHoldStrategy(eventBus, bars);
             var executionHandler = new SimulatedExecutionHandler(eventBus);
-            var portfolio = new NaivePortfolio(eventBus, bars, 10000m, DateTime.Now);
+            var portfolio = new NaivePortfolio(eventBus, bars, 10000m);
             var backTest = new BackTest(eventBus, bars, strategy, portfolio, executionHandler);
 
             backTest.SimulateTrading();
@@ -82,7 +81,7 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
             Console.BufferWidth = CONST_ScreenWidth;
 
             Console.WindowHeight = CONST_ScreenHeight;
-            Console.BufferHeight = CONST_ScreenHeight;
+            Console.BufferHeight = CONST_ScreenHeight * 5;
         }
     }
 }

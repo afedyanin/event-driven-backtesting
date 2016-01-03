@@ -2,8 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using BackTesting.Model.DataSource.Csv;
-    using BackTesting.Model.Entities;
+    using BackTesting.Model.MarketData;
     using Deedle;
     using NUnit.Framework;
 
@@ -49,8 +48,8 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
         [Test]
         public void LoadFormStringsHasValidRowKeys()
         {
-            var dataSource = new StringCsvDataSource(CsvData);
-            var mdata = ComposedMarketData.CreateFromCsv(dataSource);
+            var dataSource = CsvDataSource.CreateFormStrings(CsvData);
+            var mdata = new ComposedMarketData(dataSource.Frames);
             var rowKeys = mdata.RowKeys;
 
             foreach (var dateTime in rowKeys)
@@ -74,11 +73,9 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
         [Test]
         public void LoadFormStringsHasValidBars()
         {
-            var dataSource = new StringCsvDataSource(CsvData);
-            var mdata = ComposedMarketData.CreateFromCsv(dataSource);
-
-            var bars = mdata.GetBars("sber");
-
+            var dataSource = CsvDataSource.CreateFormStrings(CsvData);
+            var mdata = new ComposedMarketData(dataSource.Frames);
+            var bars = mdata.Bars["sber"];
             bars.Print();
         }
     }

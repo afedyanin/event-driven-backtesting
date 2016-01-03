@@ -57,8 +57,7 @@
                 Console.WriteLine("Iteration {0}", i);
                 if (this.bars.ContinueBacktest)
                 {
-                    // Console.WriteLine("Updating bars");
-                    this.bars.UpdateBars();
+                    this.bars.Update();
                 }
                 else
                 {
