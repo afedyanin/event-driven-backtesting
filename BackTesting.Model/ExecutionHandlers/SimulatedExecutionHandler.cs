@@ -34,7 +34,7 @@
             var dateTime = orderEvent.OrderTime.AddSeconds(CONST_ExecutionDelaySeconds);
 
             var fillEvent = new FillEvent(
-                dateTime.ToString(CultureInfo.InvariantCulture), 
+                dateTime, 
                 orderEvent.Symbol, 
                 "ARCA", 
                 orderEvent.Quantity, 

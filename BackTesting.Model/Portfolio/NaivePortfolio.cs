@@ -5,6 +5,7 @@
     using BackTesting.Model.Events;
     using System.Collections.Generic;
     using System.Linq;
+    using BackTesting.Model.SummaryStatistics;
     using Deedle;
 
     /// <summary>

@@ -7,38 +7,34 @@
     using BackTesting.Model.ExecutionHandlers;
     using BackTesting.Model.Portfolio;
     using BackTesting.Model.Strategies;
+    using BackTesting.Model.SummaryStatistics;
     using Deedle;
 
     public class BackTest
     {
         private readonly int heartBeatMilliseconds = 100;
 
-        private int signals;
-        private int orders;
-        private int fills;
-
         private readonly IEventBus eventBus;
         private readonly IDataHandler bars;
         private readonly IStrategy strategy;
         private readonly IPortfolio portfolio;
         private readonly IExecutionHandler executionHandler;
+        private readonly ISummaryStatistics stats;
 
         public BackTest(
             IEventBus eventBus,
             IDataHandler bars, 
             IStrategy strategy, 
             IPortfolio portfolio, 
-            IExecutionHandler executionHandler)
+            IExecutionHandler executionHandler,
+            ISummaryStatistics stats)
         {
             this.eventBus = eventBus;
             this.bars = bars;
             this.strategy = strategy;
             this.portfolio = portfolio;
             this.executionHandler = executionHandler;
-
-            this.signals = 0;
-            this.orders = 0;
-            this.fills = 0;
+            this.stats = stats;
         }
 
         public void SimulateTrading()
@@ -82,19 +78,19 @@
                             this.portfolio.UpdateTimeIndex(mEvt);
                             break;
                         case EventType.Signal:
-                            // Console.WriteLine("Signal event");
-                            this.signals++;
-                            this.portfolio.UpdateSignal((SignalEvent)evt);
+                            var signal = (SignalEvent)evt;
+                            this.stats.UpdateSignalHistory(signal);
+                            this.portfolio.UpdateSignal(signal);
                             break;
                         case EventType.Order:
-                            // Console.WriteLine("Order event");
-                            this.orders++;
-                            this.executionHandler.ExecuteOrder((OrderEvent)evt);
+                            var order = (OrderEvent)evt;
+                            this.stats.UpdateOrderHistory(order);
+                            this.executionHandler.ExecuteOrder(order);
                             break;
                         case EventType.Fill:
-                            // Console.WriteLine("Fill event");
-                            this.fills++;
-                            this.portfolio.UpdateFill((FillEvent)evt);
+                            var fill = (FillEvent)evt;
+                            this.stats.UpdateFillHistory(fill);
+                            this.portfolio.UpdateFill(fill);
                             break;
                         default:
                             // TODO: Log undefined event
@@ -110,15 +106,27 @@
         {
             Console.WriteLine("\nCreating summary stats ...");
 
-            var res = this.portfolio.GetHoldingHistory();
+            Console.WriteLine("---------------------------");
+            foreach (var signal in this.stats.SignalHistory)
+            {
+                Console.WriteLine(signal);
+            }
+            Console.WriteLine("---------------------------");
+            foreach (var order in this.stats.OrderHistory)
+            {
+                Console.WriteLine(order);
+            }
+            Console.WriteLine("---------------------------");
+            foreach (var fill in this.stats.FillHistory)
+            {
+                Console.WriteLine(fill);
+            }
 
             Console.WriteLine("---------------------------");
-            res.Print();
+            Console.WriteLine("\nHoldings");
+            this.portfolio.GetHoldingHistory().Print();
 
             Console.WriteLine("---------------------------");
-            Console.WriteLine("Signals: {0}", this.signals);
-            Console.WriteLine("Orders: {0}", this.orders);
-            Console.WriteLine("Fills: {0}", this.fills);
         }
     }
 }
