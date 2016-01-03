@@ -43,7 +43,7 @@
     <Compile Include="MarketData\ComposedMarketData.cs" />
     <Compile Include="MarketData\CsvDataSource.cs" />
     <Compile Include="MarketData\IMarketData.cs" />
-    <Compile Include="Events\EventBase.cs" />
+    <Compile Include="Events\Event.cs" />
     <Compile Include="Enums\EventType.cs" />
     <Compile Include="Events\FillEvent.cs" />
     <Compile Include="Events\IEventBus.cs" />

@@ -6,7 +6,7 @@
     /// Handles the event of sending a Signal from a Strategy object.
     /// This is received by a Portfolio object and acted upon.
     /// </summary>
-    public class SignalEvent : EventBase
+    public class SignalEvent : Event
     {
         public override EventType EventType => EventType.Signal;
 

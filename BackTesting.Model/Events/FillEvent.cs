@@ -8,7 +8,7 @@
     /// actually filled and at what price. In addition, stores
     /// the commission of the trade from the brokerage.
     /// </summary>
-    public class FillEvent : EventBase
+    public class FillEvent : Event
     {
         public override EventType EventType => EventType.Fill;
 

@@ -14,6 +14,7 @@
     {
         private const int CONST_ScreenWidth = 150;
         private const int CONST_ScreenHeight = 40;
+        private const int CONST_BufferHeight = CONST_ScreenHeight * 10;
 
         #region CSV data sample
         private static readonly IDictionary<string, string> csvData = new Dictionary<string, string>() {
@@ -55,6 +56,7 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
             SetupScreen();
             DoMainBackTest();
 
+            Console.WriteLine("\nBackTest has been finished. Press ENTER to exit.");
             Console.ReadLine();
         }
 
@@ -71,8 +73,6 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
             var backTest = new BackTest(eventBus, bars, strategy, portfolio, executionHandler);
 
             backTest.SimulateTrading();
-
-            Console.WriteLine("BackTest end.");
         }
 
         public static void SetupScreen()
@@ -81,7 +81,7 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
             Console.BufferWidth = CONST_ScreenWidth;
 
             Console.WindowHeight = CONST_ScreenHeight;
-            Console.BufferHeight = CONST_ScreenHeight * 5;
+            Console.BufferHeight = CONST_BufferHeight;
         }
     }
 }

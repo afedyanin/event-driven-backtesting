@@ -108,7 +108,7 @@
 
         private void OutputPerformance()
         {
-            Console.WriteLine("Creating summary stats ...");
+            Console.WriteLine("\nCreating summary stats ...");
 
             var res = this.portfolio.GetHoldingHistory();
 

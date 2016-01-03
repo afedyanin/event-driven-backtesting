@@ -5,7 +5,7 @@
     /// (inherited) events, that will trigger further events in the
     ///  trading infrastructure.
     /// </summary>
-    public abstract class EventBase
+    public abstract class Event
     {
         public abstract EventType EventType { get; }
     }

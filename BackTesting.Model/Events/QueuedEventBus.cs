@@ -4,15 +4,15 @@
 
     public class QueuedEventBus : IEventBus
     {
-        private readonly Queue<EventBase> queue;
+        private readonly Queue<Event> queue;
         private static readonly object sync = new object();
 
         public QueuedEventBus()
         {
-            this.queue = new Queue<EventBase>();
+            this.queue = new Queue<Event>();
         }
 
-        public EventBase Get()
+        public Event Get()
         {
             lock (sync)
             {
@@ -20,7 +20,7 @@
             }
         }
 
-        public void Put(EventBase message)
+        public void Put(Event message)
         {
             lock (sync)
             {

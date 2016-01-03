@@ -7,7 +7,7 @@
     /// The order contains a symbol(e.g.GOOG), a type(market or limit),
     /// quantity and a direction.
     /// </summary>
-    public class OrderEvent : EventBase
+    public class OrderEvent : Event
     {
         public override EventType EventType => EventType.Order;
 
