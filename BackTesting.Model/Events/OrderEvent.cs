@@ -1,5 +1,7 @@
 ﻿namespace BackTesting.Model.Events
 {
+    using System;
+
     /// <summary>
     /// Handles the event of sending an Order to an execution system.
     /// The order contains a symbol(e.g.GOOG), a type(market or limit),
@@ -13,6 +15,7 @@
         public OrderType OrderType { get; private set; }
         public int Quantity { get; private set; }
         public TransactionDirection OrderDirection { get; private set; }
+        public DateTime OrderTime { get; private set; }
 
         /// <summary>
         /// Initialises the order type, setting whether it is
@@ -23,12 +26,14 @@
         /// <param name="orderType">Market or Limit</param>
         /// <param name="quantity">Non-negative integer for quantity</param>
         /// <param name="orderDirection">'BUY' or 'SELL' for long or short</param>
-        public OrderEvent(string symbol, OrderType orderType, int quantity, TransactionDirection orderDirection)
+        /// <param name="orderTime">order timestamp</param>
+        public OrderEvent(string symbol, OrderType orderType, int quantity, TransactionDirection orderDirection, DateTime orderTime)
         {
             this.Symbol = symbol;
             this.OrderType = orderType;
             this.Quantity = quantity;
             this.OrderDirection = orderDirection;
+            this.OrderTime = orderTime;
         }
 
         /// <summary>
@@ -37,7 +42,7 @@
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Format($"Order: Symbol={this.Symbol}, Type={this.OrderType}, Quantity={this.Quantity}, Direction={this.OrderDirection}");
+            return string.Format($"Order: Symbol={this.Symbol}, Type={this.OrderType}, Quantity={this.Quantity}, Direction={this.OrderDirection}, Time={this.OrderTime}");
         }
     }
 }

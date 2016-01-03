@@ -1,5 +1,6 @@
 ﻿namespace BackTesting.Model.DataHandlers
 {
+    using System;
     using System.Collections.Generic;
     using Deedle;
 
@@ -16,6 +17,7 @@
     {
         ICollection<string> Symbols { get; }
         bool ContinueBacktest { get; }
+        DateTime? CurrentTime { get; }
         ObjectSeries<string> GetLast(string symbol);
         void Update();
     }

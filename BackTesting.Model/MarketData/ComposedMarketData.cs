@@ -13,7 +13,7 @@
 
         public ComposedMarketData(IDictionary<string, Frame<DateTime, string>> frames)
         {
-            this.Bars = new Dictionary<string, Frame<DateTime, string>>();
+            this.Bars = frames;
             this.RowKeys = this.ComposeRowKeys();
         }
 

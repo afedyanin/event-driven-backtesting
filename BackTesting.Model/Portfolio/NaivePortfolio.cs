@@ -120,25 +120,26 @@
             var symbol = signal.Symbol;
             var direction = signal.SignalType;
             var strength = signal.Strength;
+            var time = signal.TimeStamp;
 
             var marketQuantity = (int)Math.Floor(100*strength);
             var currentQuantity = (int)this.currentPositions[symbol];
 
             if (direction == SignalType.Long && currentQuantity == 0)
             {
-                return new OrderEvent(symbol, OrderType.Market, marketQuantity, TransactionDirection.Buy);
+                return new OrderEvent(symbol, OrderType.Market, marketQuantity, TransactionDirection.Buy, time);
             }
             if (direction == SignalType.Short && currentQuantity == 0)
             {
-                return new OrderEvent(symbol, OrderType.Market, marketQuantity, TransactionDirection.Sell);
+                return new OrderEvent(symbol, OrderType.Market, marketQuantity, TransactionDirection.Sell, time);
             }
             if (direction == SignalType.Exit && currentQuantity > 0)
             {
-                return new OrderEvent(symbol, OrderType.Market, Math.Abs(currentQuantity), TransactionDirection.Sell);
+                return new OrderEvent(symbol, OrderType.Market, Math.Abs(currentQuantity), TransactionDirection.Sell, time);
             }
             if (direction == SignalType.Exit && currentQuantity < 0)
             {
-                return new OrderEvent(symbol, OrderType.Market, Math.Abs(currentQuantity), TransactionDirection.Buy);
+                return new OrderEvent(symbol, OrderType.Market, Math.Abs(currentQuantity), TransactionDirection.Buy, time);
             }
 
             return null;

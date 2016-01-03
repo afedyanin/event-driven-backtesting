@@ -1,20 +1,16 @@
-﻿namespace ConsoleApp
+﻿namespace BackTesting.Tests
 {
     using System;
     using System.Collections.Generic;
-    using BackTesting.Model.BackTests;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
-    using BackTesting.Model.ExecutionHandlers;
     using BackTesting.Model.MarketData;
-    using BackTesting.Model.Portfolio;
-    using BackTesting.Model.Strategies;
+    using Deedle;
+    using NUnit.Framework;
 
-    class Program
+    [TestFixture]
+    public class HistoricDataHandlerTests
     {
-        private const int CONST_ScreenWidth = 150;
-        private const int CONST_ScreenHeight = 40;
-
         #region CSV data sample
         private static readonly IDictionary<string, string> csvData = new Dictionary<string, string>() {
                 {"sber", @"
@@ -41,47 +37,53 @@ VTBR,1,20151123,100400,0.0758100,0.0758500,0.0758000,0.0758400,5660000
 VTBR,1,20151123,100500,0.0758400,0.0760000,0.0756200,0.0758000,54390000
 VTBR,1,20151123,100600,0.0758000,0.0758700,0.0757300,0.0758000,14570000
 VTBR,1,20151123,100700,0.0758600,0.0758800,0.0758000,0.0758800,1720000
-VTBR,1,20151123,100800,0.0758800,0.0758800,0.0758400,0.0758400,2440000
-VTBR,1,20151123,100900,0.0758100,0.0758900,0.0758000,0.0758100,13090000
-VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
+VTBR,1,20151123,110800,0.0758800,0.0758800,0.0758400,0.0758400,2440000
+VTBR,1,20151123,110900,0.0758100,0.0758900,0.0758000,0.0758100,13090000
+VTBR,1,20151123,111000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
 "}
             };
         #endregion
 
-        static void Main(string[] args)
+        [Test]
+        public void CanGetLastBarFromCsvMarketData()
         {
-            Console.WriteLine("Starting...");
-
-            SetupScreen();
-            DoMainBackTest();
-
-            Console.ReadLine();
-        }
-
-        public static void DoMainBackTest()
-        {
-            var eventBus = new QueuedEventBus();
-            // var dataSource = CsvDataSource.CreateFromFiles("Data", new[] { "sber", "vtbr" });
             var dataSource = CsvDataSource.CreateFormStrings(csvData);
             var marketData = new ComposedMarketData(dataSource.Frames);
-            var bars = new HistoricDataHandler(eventBus, marketData);
-            var strategy = new BuyAndHoldStrategy(eventBus, bars);
-            var executionHandler = new SimulatedExecutionHandler(eventBus);
-            var portfolio = new NaivePortfolio(eventBus, bars, 10000m);
-            var backTest = new BackTest(eventBus, bars, strategy, portfolio, executionHandler);
+            var eventBus = new QueuedEventBus();
 
-            backTest.SimulateTrading();
+            var handler = new HistoricDataHandler(eventBus, marketData);
 
-            Console.WriteLine("BackTest end.");
-        }
+            Console.WriteLine("Total rows = {0}", marketData.RowKeys.Count);
 
-        public static void SetupScreen()
-        {
-            Console.WindowWidth = CONST_ScreenWidth;
-            Console.BufferWidth = CONST_ScreenWidth;
+            var i = 0;
+            while (handler.ContinueBacktest)
+            {
+                handler.Update();
+                i++;
 
-            Console.WindowHeight = CONST_ScreenHeight;
-            Console.BufferHeight = CONST_ScreenHeight * 5;
+                var sber = handler.GetLast("sber");
+                var vtbr = handler.GetLast("vtbr");
+
+                Console.WriteLine($"Iteration {i}");
+
+                if (sber == null)
+                {
+                    Console.WriteLine($"{handler.CurrentTime} => SBER is NULL");
+                }
+                else
+                {
+                    sber.Print();
+                }
+                if (vtbr == null)
+                {
+                    Console.WriteLine($"{handler.CurrentTime} => VTBR is NULL");
+                }
+                else
+                {
+                    vtbr.Print();
+                }
+                Console.WriteLine("------------------");
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using BackTesting.Model.MarketData;
     using Deedle;
     using NUnit.Framework;
@@ -11,7 +12,7 @@
     {
         #region CSV data sample
 
-        private static readonly IDictionary<string, string> CsvData = new Dictionary<string, string>()
+        private static readonly IDictionary<string, string> csvData = new Dictionary<string, string>()
         {
             {"sber", @"
 <TICKER>,<PER>,<DATE>,<TIME>,<OPEN>,<HIGH>,<LOW>,<CLOSE>,<VOL>
@@ -48,7 +49,7 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
         [Test]
         public void LoadFormStringsHasValidRowKeys()
         {
-            var dataSource = CsvDataSource.CreateFormStrings(CsvData);
+            var dataSource = CsvDataSource.CreateFormStrings(csvData);
             var mdata = new ComposedMarketData(dataSource.Frames);
             var rowKeys = mdata.RowKeys;
 
@@ -71,12 +72,29 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
         }
 
         [Test]
-        public void LoadFormStringsHasValidBars()
+        public void DataSourceLoadedFromStringHasValidFrames()
         {
-            var dataSource = CsvDataSource.CreateFormStrings(CsvData);
+            var dataSource = CsvDataSource.CreateFormStrings(csvData);
+            Assert.IsNotNull(dataSource.Frames);
+            Assert.AreEqual(2, dataSource.Frames.Keys.Count);
+            Assert.Contains("sber", dataSource.Frames.Keys.ToList());
+            Assert.Contains("vtbr", dataSource.Frames.Keys.ToList());
+        }
+
+        [Test]
+        public void ComposedMarketDataLoadedFromStringsIsValid()
+        {
+            var dataSource = CsvDataSource.CreateFormStrings(csvData);
             var mdata = new ComposedMarketData(dataSource.Frames);
-            var bars = mdata.Bars["sber"];
-            bars.Print();
+
+            Assert.IsNotNull(mdata.Bars);
+            Assert.IsTrue(mdata.RowKeys.Count > 0);
+            Assert.IsTrue(mdata.Symbols.Count == 2);
+            Assert.Contains("sber", mdata.Symbols.ToList());
+            Assert.Contains("vtbr", mdata.Symbols.ToList());
+
+            var sberBars = mdata.Bars["sber"];
+            sberBars.Print();
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿namespace BackTesting.Model.ExecutionHandlers
 {
-    using System;
     using System.Globalization;
     using BackTesting.Model.Events;
 
@@ -15,6 +14,8 @@
     /// </summary>
     public class SimulatedExecutionHandler : IExecutionHandler
     {
+        private const int CONST_ExecutionDelaySeconds = 5;
+
         private readonly IEventBus eventBus;
 
         public SimulatedExecutionHandler(IEventBus eventBus)
@@ -29,8 +30,11 @@
         /// <param name="orderEvent"></param>
         public void ExecuteOrder(OrderEvent orderEvent)
         {
+            // Simulate order execution delay
+            var dateTime = orderEvent.OrderTime.AddSeconds(CONST_ExecutionDelaySeconds);
+
             var fillEvent = new FillEvent(
-                DateTime.Now.ToString(CultureInfo.InvariantCulture), 
+                dateTime.ToString(CultureInfo.InvariantCulture), 
                 orderEvent.Symbol, 
                 "ARCA", 
                 orderEvent.Quantity, 

@@ -18,8 +18,7 @@
         private readonly IMarketData marketData;
         private readonly IEnumerator<DateTime> timeEnumerator;
 
-        private DateTime? currentTime;
-
+        public DateTime? CurrentTime { get; private set; }
         public bool ContinueBacktest { get; private set; }
 
         public ICollection<string> Symbols => this.marketData.Symbols;
@@ -30,7 +29,7 @@
             this.marketData = marketData;
             this.ContinueBacktest = true;
             this.timeEnumerator = this.marketData.RowKeys.GetEnumerator();
-            this.currentTime = null;
+            this.CurrentTime = null;
         }
 
         public ObjectSeries<string> GetLast(string symbol)
@@ -42,12 +41,14 @@
                 return null;
             }
 
-            if (!this.currentTime.HasValue)
+            if (!this.CurrentTime.HasValue)
             {
                 return null;
             }
 
-            return bars.Rows.Get(this.currentTime.Value, Lookup.ExactOrSmaller);
+            var res = bars.Rows.TryGet(this.CurrentTime.Value, Lookup.ExactOrSmaller);
+
+            return res.HasValue ? res.Value : null;
         }
 
         public void Update()
@@ -57,11 +58,11 @@
                 return;
             }
 
-            this.currentTime = this.GetNextTime();
+            this.CurrentTime = this.GetNextTime();
 
-            if (this.currentTime.HasValue)
+            if (this.CurrentTime.HasValue)
             {
-                this.eventBus.Put(new MarketEvent(this.currentTime.Value));
+                this.eventBus.Put(new MarketEvent(this.CurrentTime.Value));
             }
             else
             {

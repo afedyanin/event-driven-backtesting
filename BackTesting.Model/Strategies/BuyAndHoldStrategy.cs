@@ -34,6 +34,14 @@
         /// </summary>
         public void CalculateSignals()
         {
+            if (!this.bars.CurrentTime.HasValue)
+            {
+                // not started yet
+                return;
+            }
+
+            var currentTime = this.bars.CurrentTime.Value;
+
             foreach (var symbol in this.bars.Symbols)
             {
                 if (this.bought[symbol])
@@ -49,11 +57,8 @@
                     continue;
                 }
 
-                // Create signal
-                var time = (DateTime)lastBar["DateTime"];
-                var signal = new SignalEvent(symbol, time, SignalType.Long);
-                this.eventBus.Put(signal);
                 this.bought[symbol] = true;
+                this.eventBus.Put(new SignalEvent(symbol, currentTime, SignalType.Long));
             }
         }
 
