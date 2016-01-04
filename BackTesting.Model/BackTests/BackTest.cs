@@ -110,8 +110,10 @@
             Console.WriteLine("Holdings");
             this.portfolio.GetHoldingHistory().Print();
             Console.WriteLine("---------------------------");
-            Console.WriteLine("Returns");
-            this.portfolio.GetEquityCurve().Print();
+            Console.WriteLine("Equity");
+            var equityCurve = this.portfolio.GetEquityCurve();
+            equityCurve.Print();
+            equityCurve.SaveCsv("equtycurve.csv");
             Console.WriteLine("---------------------------");
             Console.WriteLine($"Signals={this.signals} Orders={this.orders} Fills={this.fills}");
         }

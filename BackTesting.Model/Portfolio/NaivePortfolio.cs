@@ -46,7 +46,7 @@
             var dict = new Dictionary<DateTime, Series<string,decimal>>();
 
             var prevTotal = decimal.Zero;
-            var equity = decimal.Zero;
+            var equity = 1m;
 
             foreach (var kvp in this.holdingHistory)
             {
@@ -58,18 +58,12 @@
 
                 prevTotal = total;
 
-                var change = this.initialCapital != decimal.Zero
-                    ? ((total - this.initialCapital)/this.initialCapital)*100
-                    : decimal.Zero;
-
-                // TODO: Fix it
-                equity = (1.0m + returns);
+                equity *= (1.0m + returns);
 
                 var sb = new SeriesBuilder<string, decimal>();
 
-                sb.Add("Change %", change);
                 sb.Add("Returns", returns);
-                sb.Add("Equity_Curve", equity);
+                sb.Add("EquityCurve", equity);
 
                 dict.Add(kvp.Key, sb.Series);
             }
@@ -132,6 +126,10 @@
                 total += marketValue;
             }
 
+            var change = this.initialCapital != decimal.Zero
+                ? ((total - this.initialCapital) / this.initialCapital) * 100
+                : decimal.Zero;
+
             foreach (var kvp in marketHoldings)
             {
                 sb.Add(kvp.Key, kvp.Value);
@@ -140,6 +138,7 @@
             sb.Add("Comission", commision);
             sb.Add("Cash", cash);
             sb.Add("Total", total);
+            sb.Add("Change %", change);
 
             var dateTime = market.CurrentTime;
 
