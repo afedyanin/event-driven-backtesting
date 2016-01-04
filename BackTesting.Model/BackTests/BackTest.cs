@@ -11,7 +11,7 @@
 
     public class BackTest
     {
-        private readonly int heartBeatMilliseconds = 100;
+        private readonly int heartBeatMilliseconds = 1;
 
         private readonly IEventBus eventBus;
         private readonly IDataHandler bars;
