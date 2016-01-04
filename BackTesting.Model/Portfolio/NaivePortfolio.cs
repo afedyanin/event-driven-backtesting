@@ -58,7 +58,7 @@
 
                 prevTotal = total;
 
-                equity *= (1.0m + returns);
+                equity *= (1.0m + returns/100);
 
                 var sb = new SeriesBuilder<string, decimal>();
 

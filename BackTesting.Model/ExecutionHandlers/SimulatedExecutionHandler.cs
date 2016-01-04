@@ -1,6 +1,7 @@
 ﻿namespace BackTesting.Model.ExecutionHandlers
 {
     using System.Globalization;
+    using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
 
     /// <summary>
@@ -17,10 +18,12 @@
         private const int CONST_ExecutionDelaySeconds = 5;
 
         private readonly IEventBus eventBus;
+        private readonly IDataHandler bars;
 
-        public SimulatedExecutionHandler(IEventBus eventBus)
+        public SimulatedExecutionHandler(IEventBus eventBus, IDataHandler bars)
         {
             this.eventBus = eventBus;
+            this.bars = bars;
         }
 
         /// <summary>
@@ -33,13 +36,16 @@
             // Simulate order execution delay
             var dateTime = orderEvent.OrderTime.AddSeconds(CONST_ExecutionDelaySeconds);
 
+            var closePrice = (decimal) this.bars.GetLast(orderEvent.Symbol)["<CLOSE>"];
+            var fillCost = closePrice * orderEvent.Quantity;
+
             var fillEvent = new FillEvent(
                 dateTime, 
                 orderEvent.Symbol, 
                 "ARCA", 
                 orderEvent.Quantity, 
                 orderEvent.OrderDirection, 
-                decimal.Zero);
+                fillCost);
 
             this.eventBus.Put(fillEvent);
         }
