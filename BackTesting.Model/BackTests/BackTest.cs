@@ -24,6 +24,8 @@
         private int orders = 0;
         private int fills = 0;
 
+        private readonly Stopwatch stopWatch;
+
         public BackTest(
             IEventBus eventBus,
             IDataHandler bars, 
@@ -36,23 +38,18 @@
             this.strategy = strategy;
             this.portfolio = portfolio;
             this.executionHandler = executionHandler;
+            this.stopWatch = new Stopwatch();
         }
 
         public void SimulateTrading()
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
             this.Run();
-            stopWatch.Stop();
-            var ts = stopWatch.Elapsed;
-            var elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
-
             this.OutputPerformance();
-            Console.WriteLine("Run Time: " + elapsedTime);
         }
 
         private void Run()
         {
+            this.stopWatch.Start();
             var iteration = 0;
             while (true)
             {
@@ -112,6 +109,8 @@
 
                 Thread.Sleep(this.heartBeatMilliseconds);
             }
+
+            this.stopWatch.Stop();
         }
 
         private void OutputPerformance()
@@ -127,6 +126,10 @@
             equityCurve.SaveCsv("equtycurve.csv", true);
             Console.WriteLine("---------------------------");
             Console.WriteLine($"Signals={this.signals} Orders={this.orders} Fills={this.fills}");
+
+            var ts = this.stopWatch.Elapsed;
+            Console.WriteLine($"Run Time: {ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}");
+
         }
     }
 }
