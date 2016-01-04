@@ -27,8 +27,8 @@
                 handler.Update();
                 i++;
 
-                var sber = handler.GetLast("sber");
-                var vtbr = handler.GetLast("vtbr");
+                var sber = handler.GetLast(Symbols.Sber);
+                var vtbr = handler.GetLast(Symbols.Vtbr);
 
                 Console.WriteLine($"Iteration {i}");
 

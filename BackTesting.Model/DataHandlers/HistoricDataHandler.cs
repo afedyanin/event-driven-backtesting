@@ -6,12 +6,6 @@
     using Deedle;
     using Events;
 
-    /// <summary>
-    /// HistoricCSVDataHandler is designed to read CSV files for
-    /// each requested symbol from disk and provide an interface
-    /// to obtain the "latest" bar in a manner identical to a live
-    /// trading interface. 
-    /// </summary>
     public class HistoricDataHandler : IDataHandler
     {
         private readonly IEventBus eventBus;
@@ -49,6 +43,12 @@
             var res = bars.Rows.TryGet(this.CurrentTime.Value, Lookup.ExactOrSmaller);
 
             return res.HasValue ? res.Value : null;
+        }
+
+        public decimal? GetLastClosePrice(string symbol)
+        {
+            var lastBar = this.GetLast(symbol);
+            return (decimal?)lastBar?[ColumnNames.Close];
         }
 
         public void Update()

@@ -43,10 +43,10 @@
             Assert.IsNotNull(mdata.Bars);
             Assert.IsTrue(mdata.RowKeys.Count > 0);
             Assert.IsTrue(mdata.Symbols.Count == 2);
-            Assert.Contains("sber", mdata.Symbols.ToList());
-            Assert.Contains("vtbr", mdata.Symbols.ToList());
+            Assert.Contains(Symbols.Sber, mdata.Symbols.ToList());
+            Assert.Contains(Symbols.Vtbr, mdata.Symbols.ToList());
 
-            var sberBars = mdata.Bars["sber"];
+            var sberBars = mdata.Bars[Symbols.Sber];
             sberBars.Print();
         }
     }

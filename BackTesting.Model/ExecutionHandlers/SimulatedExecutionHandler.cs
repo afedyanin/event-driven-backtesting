@@ -1,18 +1,9 @@
 ﻿namespace BackTesting.Model.ExecutionHandlers
 {
-    using System.Globalization;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
+    using BackTesting.Model.MarketData;
 
-    /// <summary>
-    /// The simulated execution handler simply converts all order
-    /// objects into their equivalent fill objects automatically
-    /// without latency, slippage or fill-ratio issues.
-    /// 
-    /// This allows a straightforward "first go" test of any strategy,
-    /// before implementation with a more sophisticated execution
-    /// handler.
-    /// </summary>
     public class SimulatedExecutionHandler : IExecutionHandler
     {
         private const int CONST_ExecutionDelaySeconds = 5;
@@ -26,18 +17,13 @@
             this.bars = bars;
         }
 
-        /// <summary>
-        /// Simply converts Order objects into Fill objects naively,
-        /// i.e.without any latency, slippage or fill ratio problems.
-        /// </summary>
-        /// <param name="orderEvent"></param>
         public void ExecuteOrder(OrderEvent orderEvent)
         {
             // Simulate order execution delay
             var dateTime = orderEvent.OrderTime.AddSeconds(CONST_ExecutionDelaySeconds);
 
-            var closePrice = (decimal) this.bars.GetLast(orderEvent.Symbol)["<CLOSE>"];
-            var fillCost = closePrice * orderEvent.Quantity;
+            var closePrice = this.bars.GetLastClosePrice(orderEvent.Symbol);
+            var fillCost = closePrice * orderEvent.Quantity ?? decimal.Zero;
 
             var fillEvent = new FillEvent(
                 dateTime, 

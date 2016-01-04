@@ -5,14 +5,9 @@
     using BackTesting.Model.Events;
     using System.Collections.Generic;
     using System.Linq;
+    using BackTesting.Model.MarketData;
     using Deedle;
 
-    /// <summary>
-    /// The NaivePortfolio object is designed to send orders to
-    /// a brokerage object with a constant quantity size blindly,
-    /// i.e.without any risk management or position sizing.It is
-    /// used to test simpler strategies such as BuyAndHoldStrategy.
-    /// </summary>
     public class NaivePortfolio : IPortfolio
     {
         private readonly IEventBus eventBus;
@@ -50,7 +45,7 @@
 
             foreach (var kvp in this.holdingHistory)
             {
-                var total = kvp.Value.Get("Total");
+                var total = kvp.Value.Get(ColumnNames.Total);
 
                 var returns = prevTotal != decimal.Zero 
                     ? ((total - prevTotal) / prevTotal) * 100 
@@ -60,10 +55,12 @@
 
                 equity *= (1.0m + returns/100);
 
-                var sb = new SeriesBuilder<string, decimal>();
+                var sb = new SeriesBuilder<string, decimal>
+                {
+                    {ColumnNames.EquityCurve, equity},
+                    {ColumnNames.Returns, returns}
+                };
 
-                sb.Add("EquityCurve", equity);
-                sb.Add("Returns", returns);
 
                 dict.Add(kvp.Key, sb.Series);
             }
@@ -83,7 +80,7 @@
         public void UpdateFill(FillEvent fill)
         {
             var fillDir = GetNumericDirection(fill.Direction);
-            var closePrice = GetLastClosePrice(fill.Symbol);
+            var closePrice = this.bars.GetLastClosePrice(fill.Symbol);
 
             if (closePrice == null)
             {
@@ -109,7 +106,7 @@
             foreach (var symbol in this.bars.Symbols)
             {
                 var qty = this.currentPositions[symbol];
-                var closePrice = GetLastClosePrice(symbol);
+                var closePrice = this.bars.GetLastClosePrice(symbol);
 
                 if (closePrice == null)
                 {
@@ -135,10 +132,10 @@
                 sb.Add(kvp.Key, kvp.Value);
             }
 
-            sb.Add("Comission", commision);
-            sb.Add("Cash", cash);
-            sb.Add("Total", total);
-            sb.Add("Change %", change);
+            sb.Add(ColumnNames.Comission, commision);
+            sb.Add(ColumnNames.Cash, cash);
+            sb.Add(ColumnNames.Total, total);
+            sb.Add(ColumnNames.Change, change);
 
             var dateTime = market.CurrentTime;
 
@@ -180,12 +177,6 @@
             }
 
             return null;
-        }
-
-        private decimal? GetLastClosePrice(string symbol)
-        {
-            var lastBar = this.bars.GetLast(symbol);
-            return (decimal?) lastBar?["<CLOSE>"];
         }
 
         // TODO: Convert to extension

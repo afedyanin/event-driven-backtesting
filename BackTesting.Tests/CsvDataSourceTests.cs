@@ -16,8 +16,8 @@
             var dataSource = CsvDataSource.CreateFormStrings(Mother.UnsortedRowsCsvData);
             Assert.IsNotNull(dataSource.Frames);
             Assert.AreEqual(2, dataSource.Frames.Keys.Count);
-            Assert.Contains("sber", dataSource.Frames.Keys.ToList());
-            Assert.Contains("vtbr", dataSource.Frames.Keys.ToList());
+            Assert.Contains(Symbols.Sber, dataSource.Frames.Keys.ToList());
+            Assert.Contains(Symbols.Vtbr, dataSource.Frames.Keys.ToList());
         }
 
         [Test]
@@ -26,9 +26,9 @@
             var dataSource = CsvDataSource.CreateFormStrings(Mother.DailyCsvData);
             Assert.IsNotNull(dataSource.Frames);
             Assert.AreEqual(1, dataSource.Frames.Keys.Count);
-            Assert.Contains("sber", dataSource.Frames.Keys.ToList());
+            Assert.Contains(Symbols.Sber, dataSource.Frames.Keys.ToList());
 
-            var sberFrame = dataSource.Frames["sber"];
+            var sberFrame = dataSource.Frames[Symbols.Sber];
             Assert.IsTrue(sberFrame.RowKeys.Any());
         }
 

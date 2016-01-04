@@ -40,6 +40,7 @@
     <Compile Include="BackTests\BackTest.cs" />
     <Compile Include="DataHandlers\IDataHandler.cs" />
     <Compile Include="DataHandlers\HistoricDataHandler.cs" />
+    <Compile Include="MarketData\ColumnNames.cs" />
     <Compile Include="MarketData\ComposedMarketData.cs" />
     <Compile Include="MarketData\CsvDataSource.cs" />
     <Compile Include="MarketData\IMarketData.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="Enums\SignalType.cs" />
     <Compile Include="ExecutionHandlers\IExecutionHandler.cs" />
     <Compile Include="ExecutionHandlers\SimulatedExecutionHandler.cs" />
+    <Compile Include="MarketData\Symbols.cs" />
     <Compile Include="Portfolio\NaivePortfolio.cs" />
     <Compile Include="Portfolio\IPortfolio.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

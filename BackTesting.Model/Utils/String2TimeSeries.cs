@@ -1,19 +1,16 @@
 ﻿namespace BackTesting.Model.Utils
 {
     using System;
+    using BackTesting.Model.MarketData;
     using Deedle;
 
     public static class String2TimeSeries
     {
         private const string CONST_IndexColumnName = "DateTimeKeys";
 
-        public static Frame<DateTime, string> Convert(
-            Frame<int, string> frame,
-            string stringDateColumnName = "<DATE>",
-            string stringTimeColumnName = "<TIME>",
-            string dateTimeColumnName = "DateTime")
+        public static Frame<DateTime, string> Convert(Frame<int, string> frame)
         {
-            var res = ReplaceStringColumnsWithDateTime(frame, stringDateColumnName, stringTimeColumnName, dateTimeColumnName);
+            var res = ReplaceStringColumnsWithDateTime(frame, ColumnNames.Date, ColumnNames.Time, ColumnNames.DateTime);
             return ReindexRowsByDateTime(res);
         }
 
