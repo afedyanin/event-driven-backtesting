@@ -7,7 +7,6 @@
     using BackTesting.Model.ExecutionHandlers;
     using BackTesting.Model.Portfolio;
     using BackTesting.Model.Strategies;
-    using BackTesting.Model.SummaryStatistics;
     using Deedle;
 
     public class BackTest
@@ -19,22 +18,23 @@
         private readonly IStrategy strategy;
         private readonly IPortfolio portfolio;
         private readonly IExecutionHandler executionHandler;
-        private readonly ISummaryStatistics stats;
+
+        private int signals = 0;
+        private int orders = 0;
+        private int fills = 0;
 
         public BackTest(
             IEventBus eventBus,
             IDataHandler bars, 
             IStrategy strategy, 
             IPortfolio portfolio, 
-            IExecutionHandler executionHandler,
-            ISummaryStatistics stats)
+            IExecutionHandler executionHandler)
         {
             this.eventBus = eventBus;
             this.bars = bars;
             this.strategy = strategy;
             this.portfolio = portfolio;
             this.executionHandler = executionHandler;
-            this.stats = stats;
         }
 
         public void SimulateTrading()
@@ -45,12 +45,10 @@
 
         private void Run()
         {
-            int i = 0;
-
+            var iteration = 0;
             while (true)
             {
-                i++;
-                Console.WriteLine("Iteration {0}", i);
+                iteration++;
                 if (this.bars.ContinueBacktest)
                 {
                     this.bars.Update();
@@ -73,24 +71,27 @@
                     {
                         case EventType.Market:
                             var mEvt = (MarketEvent) evt;
-                            Console.WriteLine("Market event => {0}", mEvt.CurrentTime);
+                            Console.WriteLine($"{iteration} Market time: {mEvt.CurrentTime}");
                             this.strategy.CalculateSignals();
                             this.portfolio.UpdateTimeIndex(mEvt);
                             break;
                         case EventType.Signal:
                             var signal = (SignalEvent)evt;
-                            this.stats.UpdateSignalHistory(signal);
+                            Console.WriteLine($" => {signal}");
                             this.portfolio.UpdateSignal(signal);
+                            this.signals++;
                             break;
                         case EventType.Order:
                             var order = (OrderEvent)evt;
-                            this.stats.UpdateOrderHistory(order);
+                            Console.WriteLine($" => {order}");
                             this.executionHandler.ExecuteOrder(order);
+                            this.orders++;
                             break;
                         case EventType.Fill:
                             var fill = (FillEvent)evt;
-                            this.stats.UpdateFillHistory(fill);
+                            Console.WriteLine($" => {fill}");
                             this.portfolio.UpdateFill(fill);
+                            this.fills++;
                             break;
                         default:
                             // TODO: Log undefined event
@@ -105,28 +106,11 @@
         private void OutputPerformance()
         {
             Console.WriteLine("\nCreating summary stats ...");
-
             Console.WriteLine("---------------------------");
-            foreach (var signal in this.stats.SignalHistory)
-            {
-                Console.WriteLine(signal);
-            }
-            Console.WriteLine("---------------------------");
-            foreach (var order in this.stats.OrderHistory)
-            {
-                Console.WriteLine(order);
-            }
-            Console.WriteLine("---------------------------");
-            foreach (var fill in this.stats.FillHistory)
-            {
-                Console.WriteLine(fill);
-            }
-
-            Console.WriteLine("---------------------------");
-            Console.WriteLine("\nHoldings");
+            Console.WriteLine("Holdings");
             this.portfolio.GetHoldingHistory().Print();
-
             Console.WriteLine("---------------------------");
+            Console.WriteLine($"Signals={this.signals} Orders={this.orders} Fills={this.fills}");
         }
     }
 }
