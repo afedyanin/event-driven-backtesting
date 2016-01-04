@@ -25,10 +25,17 @@
 
         private static DateTime? ConvertDateTime(string date, string time, string dateTimeFormat)
         {
+            time = FixTimeStringIfZero(time);
             var dateTime = $"{date.Trim()} {time.Trim()}";
             DateTime res;
             var isConverted = DateTime.TryParseExact(dateTime, dateTimeFormat, null, DateTimeStyles.None, out res);
             return isConverted ? (DateTime?)res : null;
+        }
+
+        private static string FixTimeStringIfZero(string time)
+        {
+            var isZeroTime = string.Compare(time.Trim(), "0", StringComparison.InvariantCultureIgnoreCase) == 0;
+            return isZeroTime ? "000000" : time;
         }
     }
 }

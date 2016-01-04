@@ -42,7 +42,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComposedMarketDataTests.cs" />
+    <Compile Include="CsvDataSourceTests.cs" />
     <Compile Include="HistoricDataHandlerTests.cs" />
+    <Compile Include="Mother.cs" />
     <Compile Include="String2DateTimeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

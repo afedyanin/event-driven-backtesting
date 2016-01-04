@@ -11,7 +11,7 @@
         public SignalType SignalType { get; private set; }
         public decimal Strength { get; private set; }
 
-        public SignalEvent(string symbol, DateTime timeStamp, SignalType signalType, decimal strength = 0.1m)
+        public SignalEvent(string symbol, DateTime timeStamp, SignalType signalType, decimal strength = 1m)
         {
             this.Symbol = symbol;
             this.TimeStamp = timeStamp;

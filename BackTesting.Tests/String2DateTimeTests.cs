@@ -31,5 +31,15 @@
             Assert.IsNotNull(res);
             Assert.AreEqual(expectedDate, res);
         }
+
+        [Test]
+        public void ConvertDateWithZeroTimeReturnsValidDateTime()
+        {
+            var res = String2DateTime.Convert("20151123", "0");
+            var expectedDate = new DateTime(2015, 11, 23, 0, 0, 0);
+            Assert.IsNotNull(res);
+            Assert.AreEqual(expectedDate, res);
+        }
+
     }
 }

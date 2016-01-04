@@ -45,8 +45,9 @@
             this.Run();
             stopWatch.Stop();
             var ts = stopWatch.Elapsed;
-            this.OutputPerformance();
             var elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+
+            this.OutputPerformance();
             Console.WriteLine("Run Time: " + elapsedTime);
         }
 
