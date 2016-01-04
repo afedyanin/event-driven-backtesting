@@ -17,6 +17,7 @@
     {
         private readonly IEventBus eventBus;
         private readonly IDataHandler bars;
+        private readonly decimal initialCapital;
 
         private readonly IDictionary<DateTime, Series<string, decimal>> holdingHistory;
         private readonly IDictionary<string, int> currentPositions;
@@ -27,16 +28,53 @@
         {
             this.eventBus = eventBus;
             this.bars = bars;
+            this.initialCapital = initialCapital;
 
             this.holdingHistory = new Dictionary<DateTime, Series<string, decimal>>();
             this.currentPositions = this.bars.Symbols.ToDictionary(symbol => symbol, qty => 0); ;
             this.currentComission = decimal.Zero;
-            this.currentCash = initialCapital;
+            this.currentCash = this.initialCapital;
         }
 
         public Frame<DateTime, string> GetHoldingHistory()
         {
             return Frame.FromRows(this.holdingHistory);
+        }
+
+        public Frame<DateTime, string> GetEquityCurve()
+        {
+            var dict = new Dictionary<DateTime, Series<string,decimal>>();
+
+            var prevTotal = decimal.Zero;
+            var equity = decimal.Zero;
+
+            foreach (var kvp in this.holdingHistory)
+            {
+                var total = kvp.Value.Get("Total");
+
+                var returns = prevTotal != decimal.Zero 
+                    ? ((total - prevTotal) / prevTotal) * 100 
+                    : decimal.Zero;
+
+                prevTotal = total;
+
+                var change = this.initialCapital != decimal.Zero
+                    ? ((total - this.initialCapital)/this.initialCapital)*100
+                    : decimal.Zero;
+
+                // TODO: Fix it
+                equity = (1.0m + returns);
+
+                var sb = new SeriesBuilder<string, decimal>();
+
+                sb.Add("Change %", change);
+                sb.Add("Returns", returns);
+                sb.Add("Equity_Curve", equity);
+
+                dict.Add(kvp.Key, sb.Series);
+            }
+
+            return Frame.FromRows(dict);
         }
 
         public void UpdateSignal(SignalEvent signal)

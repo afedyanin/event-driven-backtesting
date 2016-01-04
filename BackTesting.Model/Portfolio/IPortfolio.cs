@@ -15,5 +15,6 @@
         void UpdateFill(FillEvent fill);
         void UpdateTimeIndex(MarketEvent market);
         Frame<DateTime, string> GetHoldingHistory();
+        Frame<DateTime, string> GetEquityCurve();
     }
 }
