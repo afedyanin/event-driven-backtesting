@@ -62,8 +62,8 @@
 
                 var sb = new SeriesBuilder<string, decimal>();
 
-                sb.Add("Returns", returns);
                 sb.Add("EquityCurve", equity);
+                sb.Add("Returns", returns);
 
                 dict.Add(kvp.Key, sb.Series);
             }

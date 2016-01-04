@@ -1,6 +1,7 @@
 ﻿namespace BackTesting.Model.BackTests
 {
     using System;
+    using System.Diagnostics;
     using System.Threading;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
@@ -11,7 +12,7 @@
 
     public class BackTest
     {
-        private readonly int heartBeatMilliseconds = 1;
+        private readonly int heartBeatMilliseconds = 0;
 
         private readonly IEventBus eventBus;
         private readonly IDataHandler bars;
@@ -39,8 +40,14 @@
 
         public void SimulateTrading()
         {
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
             this.Run();
+            stopWatch.Stop();
+            var ts = stopWatch.Elapsed;
             this.OutputPerformance();
+            var elapsedTime = string.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);
+            Console.WriteLine("Run Time: " + elapsedTime);
         }
 
         private void Run()
@@ -71,7 +78,10 @@
                     {
                         case EventType.Market:
                             var mEvt = (MarketEvent) evt;
-                            Console.WriteLine($"{iteration} Market time: {mEvt.CurrentTime}");
+                            if (iteration % 100 == 0)
+                            {
+                                Console.WriteLine($"{iteration} Market time: {mEvt.CurrentTime}");
+                            }
                             this.strategy.CalculateSignals();
                             this.portfolio.UpdateTimeIndex(mEvt);
                             break;
@@ -113,7 +123,7 @@
             Console.WriteLine("Equity");
             var equityCurve = this.portfolio.GetEquityCurve();
             equityCurve.Print();
-            equityCurve.SaveCsv("equtycurve.csv");
+            equityCurve.SaveCsv("equtycurve.csv", true);
             Console.WriteLine("---------------------------");
             Console.WriteLine($"Signals={this.signals} Orders={this.orders} Fills={this.fills}");
         }

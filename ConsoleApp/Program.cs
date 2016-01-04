@@ -63,7 +63,7 @@ VTBR,1,20151123,101000,0.0758100,0.0758800,0.0758100,0.0758100,4410000
         public static void DoMainBackTest()
         {
             var eventBus = new QueuedEventBus();
-            var dataSource = CsvDataSource.CreateFromFiles("Data", new[] { "sber", "vtbr" });
+            var dataSource = CsvDataSource.CreateFromFiles("Data\\Custom", new[] { "sber" });
             // var dataSource = CsvDataSource.CreateFormStrings(csvData);
             var marketData = new ComposedMarketData(dataSource.Frames);
             var bars = new HistoricDataHandler(eventBus, marketData);
