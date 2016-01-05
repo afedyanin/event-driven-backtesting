@@ -2,8 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using BackTesting.Model.MarketData;
-    using Deedle;
     using Events;
 
     public class HistoricDataHandler : IDataHandler
@@ -26,7 +26,7 @@
             this.CurrentTime = null;
         }
 
-        public ObjectSeries<string> GetLast(string symbol)
+        public Bar GetLast(string symbol)
         {
             var bars = this.marketData.Bars[symbol];
 
@@ -40,15 +40,21 @@
                 return null;
             }
 
-            var res = bars.Rows.TryGet(this.CurrentTime.Value, Lookup.ExactOrSmaller);
+            var dateTime = this.CurrentTime.Value;
 
-            return res.HasValue ? res.Value : null;
+            if (bars.ContainsKey(dateTime))
+            {
+                return bars[dateTime];
+            }
+
+            var smallerDate = bars.Keys.OrderByDescending(k => k).FirstOrDefault(key => key <= dateTime);
+
+            return bars.ContainsKey(smallerDate) ? bars[smallerDate] : null;
         }
 
         public decimal? GetLastClosePrice(string symbol)
         {
-            var lastBar = this.GetLast(symbol);
-            return (decimal?)lastBar?[ColumnNames.Close];
+            return this.GetLast(symbol)?.Close;
         }
 
         public void Update()

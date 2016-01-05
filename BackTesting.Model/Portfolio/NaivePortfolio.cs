@@ -5,8 +5,6 @@
     using BackTesting.Model.Events;
     using System.Collections.Generic;
     using System.Linq;
-    using BackTesting.Model.MarketData;
-    using Deedle;
 
     public class NaivePortfolio : IPortfolio
     {
@@ -14,7 +12,8 @@
         private readonly IDataHandler bars;
         private readonly decimal initialCapital;
 
-        private readonly IDictionary<DateTime, Series<string, decimal>> holdingHistory;
+        public IDictionary<DateTime, Holding> HoldingHistory { get; private set; }
+
         private readonly IDictionary<string, int> currentPositions;
         private decimal currentComission;
         private decimal currentCash;
@@ -24,48 +23,32 @@
             this.eventBus = eventBus;
             this.bars = bars;
             this.initialCapital = initialCapital;
-
-            this.holdingHistory = new Dictionary<DateTime, Series<string, decimal>>();
+            this.HoldingHistory = new Dictionary<DateTime, Holding>();
             this.currentPositions = this.bars.Symbols.ToDictionary(symbol => symbol, qty => 0); ;
             this.currentComission = decimal.Zero;
             this.currentCash = this.initialCapital;
         }
 
-        public Frame<DateTime, string> GetHoldingHistory()
+        public IDictionary<DateTime, decimal> GetEquityCurve()
         {
-            return Frame.FromRows(this.holdingHistory);
-        }
-
-        public Frame<DateTime, string> GetEquityCurve()
-        {
-            var dict = new Dictionary<DateTime, Series<string,decimal>>();
-
             var prevTotal = decimal.Zero;
             var equity = 1m;
 
-            foreach (var kvp in this.holdingHistory)
+            foreach (var kvp in this.HoldingHistory)
             {
-                var total = kvp.Value.Get(ColumnNames.Total);
+                var total = kvp.Value.Total;
 
                 var returns = prevTotal != decimal.Zero 
                     ? ((total - prevTotal) / prevTotal) * 100 
                     : decimal.Zero;
 
                 prevTotal = total;
-
                 equity *= (1.0m + returns/100);
-
-                var sb = new SeriesBuilder<string, decimal>
-                {
-                    {ColumnNames.EquityCurve, equity},
-                    {ColumnNames.Returns, returns}
-                };
-
-
-                dict.Add(kvp.Key, sb.Series);
+                kvp.Value.EquityCurve = equity;
+                kvp.Value.Returns = returns;
             }
 
-            return Frame.FromRows(dict);
+            return this.HoldingHistory.Values.ToDictionary(holding => holding.DateTime, holding => holding.EquityCurve);
         }
 
         public void UpdateSignal(SignalEvent signal)
@@ -95,8 +78,6 @@
 
         public void UpdateTimeIndex(MarketEvent market)
         {
-            var sb = new SeriesBuilder<string, decimal>();
-
             var marketHoldings = this.bars.Symbols.ToDictionary(symbol => symbol, cost => decimal.Zero); 
 
             var cash = this.currentCash;
@@ -127,25 +108,28 @@
                 ? ((total - this.initialCapital) / this.initialCapital) * 100
                 : decimal.Zero;
 
+
+            var holding = new Holding();
+
             foreach (var kvp in marketHoldings)
             {
-                sb.Add(kvp.Key, kvp.Value);
+                holding.SymbolHoldings.Add(kvp.Key, kvp.Value);
             }
 
-            sb.Add(ColumnNames.Comission, commision);
-            sb.Add(ColumnNames.Cash, cash);
-            sb.Add(ColumnNames.Total, total);
-            sb.Add(ColumnNames.Change, change);
+            holding.Comission = commision;
+            holding.Cash = cash;
+            holding.Total = total;
+            holding.Change = change;
 
             var dateTime = market.CurrentTime;
 
-            if (this.holdingHistory.ContainsKey(dateTime))
+            if (this.HoldingHistory.ContainsKey(dateTime))
             {
-                this.holdingHistory[dateTime] = sb.Series;
+                this.HoldingHistory[dateTime] = holding;
             }
             else
             {
-                this.holdingHistory.Add(dateTime, sb.Series);
+                this.HoldingHistory.Add(dateTime, holding);
             }
         }
 

@@ -1,30 +1,55 @@
 ﻿namespace BackTesting.Model.Utils
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Text;
-    using Deedle;
+    using BackTesting.Model.MarketData;
+    using BackTesting.Model.MarketData.Csv;
+    using CsvHelper;
+    using CsvHelper.Configuration;
 
     public static class Csv2Frame
     {
-        public static Frame<int, string> LoadFromFile(string filePath)
+        public static IDictionary<DateTime, Bar> LoadBarsFromFile(string filePath)
         {
-            using (var fs = new FileStream(filePath, FileMode.Open))
+            using (var textReader = new StreamReader(filePath))
             {
-                return LoadFromStream(fs);
+                return LoadFormTextReader(textReader);
             }
         }
 
-        public static Frame<int, string> LoadFromString(string csvString)
+        public static IDictionary<DateTime, Bar> LoadBarsFromString(string csvString)
         {
             using (var ms = new MemoryStream(Encoding.Default.GetBytes(csvString)))
             {
-                return LoadFromStream(ms);
+                using (var textReader = new StreamReader(ms))
+                {
+                    return LoadFormTextReader(textReader);
+                }
             }
         }
 
-        public static Frame<int, string> LoadFromStream(Stream stream)
+        public static IDictionary<DateTime, Bar> LoadFormTextReader(TextReader reader)
         {
-            return Frame.ReadCsv(stream);
+            var res = new Dictionary<DateTime, Bar>();
+            var cfg = new CsvConfiguration();
+            cfg.RegisterClassMap<BarCsvMap>();
+
+            var csv = new CsvReader(reader, cfg);
+            foreach (var bar in csv.GetRecords<Bar>())
+            {
+                if (res.ContainsKey(bar.DateTime))
+                {
+                    res[bar.DateTime] = bar;
+                }
+                else
+                {
+                    res.Add(bar.DateTime, bar);
+                }
+            }
+
+            return res;
         }
     }
 }

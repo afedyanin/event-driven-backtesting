@@ -4,15 +4,14 @@
     using System.Collections.Generic;
     using System.IO;
     using BackTesting.Model.Utils;
-    using Deedle;
 
     public class CsvDataSource 
     {
-        public IDictionary<string, Frame<DateTime, string>> Frames { get; }
+        public IDictionary<string, IDictionary<DateTime, Bar>> Bars { get; }
 
         protected CsvDataSource()
         {
-            this.Frames = new Dictionary<string, Frame<DateTime, string>>();
+            this.Bars = new Dictionary<string, IDictionary<DateTime, Bar>>();
         }
 
         public static CsvDataSource CreateFromFiles(string csvDirectory, string[] symbolList)
@@ -22,7 +21,7 @@
             foreach (var symbol in symbolList)
             {
                 var csvPath = Path.Combine(csvDirectory, symbol + ".csv");
-                res.AddOrReplace(symbol, Csv2Frame.LoadFromFile(csvPath));
+                res.AddOrReplaceBars(symbol, Csv2Frame.LoadBarsFromFile(csvPath));
             }
 
             return res;
@@ -34,25 +33,22 @@
 
             foreach (var kvp in csvData)
             {
-                res.AddOrReplace(kvp.Key, Csv2Frame.LoadFromString(kvp.Value));
+                res.AddOrReplaceBars(kvp.Key, Csv2Frame.LoadBarsFromString(kvp.Value));
             }
 
             return res;
         }
 
-        private void AddOrReplace(string symbol, Frame<int, string> frame)
+        private void AddOrReplaceBars(string symbol, IDictionary<DateTime, Bar> bars)
         {
-            var dateTimeFrame = String2TimeSeries.Convert(frame);
-
-            if (this.Frames.ContainsKey(symbol))
+            if (this.Bars.ContainsKey(symbol))
             {
-                this.Frames[symbol] = dateTimeFrame;
+                this.Bars[symbol] = bars;
             }
             else
             {
-                this.Frames.Add(symbol, dateTimeFrame);
+                this.Bars.Add(symbol, bars);
             }
         }
-
     }
 }

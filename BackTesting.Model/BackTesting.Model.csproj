@@ -30,8 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Deedle, Version=1.2.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Deedle.1.2.4\lib\net40\Deedle.dll</HintPath>
+    <Reference Include="CsvHelper, Version=2.0.0.0, Culture=neutral, PublicKeyToken=8c4959082be5c823, processorArchitecture=MSIL">
+      <HintPath>..\packages\CsvHelper.2.13.5.0\lib\net40-client\CsvHelper.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -40,9 +40,11 @@
     <Compile Include="BackTests\BackTest.cs" />
     <Compile Include="DataHandlers\IDataHandler.cs" />
     <Compile Include="DataHandlers\HistoricDataHandler.cs" />
+    <Compile Include="MarketData\Bar.cs" />
     <Compile Include="MarketData\ColumnNames.cs" />
     <Compile Include="MarketData\ComposedMarketData.cs" />
     <Compile Include="MarketData\CsvDataSource.cs" />
+    <Compile Include="MarketData\Csv\BarCsvMap.cs" />
     <Compile Include="MarketData\IMarketData.cs" />
     <Compile Include="Events\Event.cs" />
     <Compile Include="Enums\EventType.cs" />
@@ -58,18 +60,20 @@
     <Compile Include="ExecutionHandlers\IExecutionHandler.cs" />
     <Compile Include="ExecutionHandlers\SimulatedExecutionHandler.cs" />
     <Compile Include="MarketData\Symbols.cs" />
+    <Compile Include="Portfolio\Holding.cs" />
     <Compile Include="Portfolio\NaivePortfolio.cs" />
     <Compile Include="Portfolio\IPortfolio.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Strategies\BuyAndHoldStrategy.cs" />
     <Compile Include="Strategies\IStrategy.cs" />
     <Compile Include="Utils\Csv2Frame.cs" />
+    <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Utils\String2DateTime.cs" />
-    <Compile Include="Utils\String2TimeSeries.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

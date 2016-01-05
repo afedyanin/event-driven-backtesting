@@ -3,7 +3,6 @@
     using System;
     using System.Linq;
     using BackTesting.Model.MarketData;
-    using Deedle;
     using NUnit.Framework;
 
     [TestFixture]
@@ -13,7 +12,7 @@
         public void ComposedMarketDataLoadedFromStringsHasValidRowKeys()
         {
             var dataSource = CsvDataSource.CreateFormStrings(Mother.UnsortedRowsCsvData);
-            var mdata = new ComposedMarketData(dataSource.Frames);
+            var mdata = new ComposedMarketData(dataSource.Bars);
             var rowKeys = mdata.RowKeys;
 
             foreach (var dateTime in rowKeys)
@@ -38,7 +37,7 @@
         public void ComposedMarketDataLoadedFromStringsIsValid()
         {
             var dataSource = CsvDataSource.CreateFormStrings(Mother.UnsortedRowsCsvData);
-            var mdata = new ComposedMarketData(dataSource.Frames);
+            var mdata = new ComposedMarketData(dataSource.Bars);
 
             Assert.IsNotNull(mdata.Bars);
             Assert.IsTrue(mdata.RowKeys.Count > 0);
@@ -47,7 +46,11 @@
             Assert.Contains(Symbols.Vtbr, mdata.Symbols.ToList());
 
             var sberBars = mdata.Bars[Symbols.Sber];
-            sberBars.Print();
+
+            foreach (var bar in sberBars.Values)
+            {
+                Console.WriteLine(bar);
+            }
         }
     }
 }

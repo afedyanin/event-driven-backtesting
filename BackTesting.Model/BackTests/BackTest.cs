@@ -1,14 +1,16 @@
 ﻿namespace BackTesting.Model.BackTests
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
+    using System.IO;
     using System.Threading;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
     using BackTesting.Model.ExecutionHandlers;
     using BackTesting.Model.Portfolio;
     using BackTesting.Model.Strategies;
-    using Deedle;
+    using CsvHelper;
 
     public class BackTest
     {
@@ -118,18 +120,47 @@
             Console.WriteLine("\nCreating summary stats ...");
             Console.WriteLine("---------------------------");
             Console.WriteLine("Holdings");
-            this.portfolio.GetHoldingHistory().Print();
+            this.PrintHoldingHistory(this.portfolio.HoldingHistory);
             Console.WriteLine("---------------------------");
             Console.WriteLine("Equity");
             var equityCurve = this.portfolio.GetEquityCurve();
-            equityCurve.Print();
-            equityCurve.SaveCsv("equtycurve.csv", true);
+            this.PrintEquityCurve(equityCurve);
+            this.SaveAsCsv(equityCurve, "equtycurve.csv");
             Console.WriteLine("---------------------------");
             Console.WriteLine($"Signals={this.signals} Orders={this.orders} Fills={this.fills}");
 
             var ts = this.stopWatch.Elapsed;
             Console.WriteLine($"Run Time: {ts.Hours:00}:{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}");
 
+        }
+
+        private void PrintHoldingHistory(IDictionary<DateTime, Holding> holdingHistory)
+        {
+            foreach (var holding in holdingHistory.Values)
+            {
+                Console.WriteLine(holding);
+            }
+        }
+
+        private void PrintEquityCurve(IDictionary<DateTime, decimal> equityCurve)
+        {
+            foreach (var kvp in equityCurve)
+            {
+                Console.WriteLine($"{kvp.Key} {kvp.Value}");
+            }
+        }
+
+        private void SaveAsCsv(IDictionary<DateTime, decimal> equityCurve, string fileName)
+        {
+            using (var tw = new StreamWriter(fileName))
+            {
+                var csvWriter = new CsvWriter(tw);
+
+                foreach (var kvp in equityCurve)
+                {
+                    csvWriter.WriteRecord(new { DateTime = kvp.Key, Equity = kvp.Value });
+                }
+            }
         }
     }
 }

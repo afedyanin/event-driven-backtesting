@@ -4,7 +4,7 @@
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
     using BackTesting.Model.MarketData;
-    using Deedle;
+    using BackTesting.Model.Utils;
     using NUnit.Framework;
 
     [TestFixture]
@@ -14,7 +14,7 @@
         public void CanGetLastBarFromCsvMarketData()
         {
             var dataSource = CsvDataSource.CreateFormStrings(Mother.GenericCsvData);
-            var marketData = new ComposedMarketData(dataSource.Frames);
+            var marketData = new ComposedMarketData(dataSource.Bars);
             var eventBus = new QueuedEventBus();
 
             var handler = new HistoricDataHandler(eventBus, marketData);

@@ -3,42 +3,39 @@
     using System.Linq;
     using BackTesting.Model.MarketData;
     using BackTesting.Model.Utils;
-    using Deedle;
     using NUnit.Framework;
 
     [TestFixture]
     public class CsvDataSourceTests
     {
-
         [Test]
         public void DataSourceLoadedFromStringHasValidFrames()
         {
             var dataSource = CsvDataSource.CreateFormStrings(Mother.UnsortedRowsCsvData);
-            Assert.IsNotNull(dataSource.Frames);
-            Assert.AreEqual(2, dataSource.Frames.Keys.Count);
-            Assert.Contains(Symbols.Sber, dataSource.Frames.Keys.ToList());
-            Assert.Contains(Symbols.Vtbr, dataSource.Frames.Keys.ToList());
+            Assert.IsNotNull(dataSource.Bars);
+            Assert.AreEqual(2, dataSource.Bars.Keys.Count);
+            Assert.Contains(Symbols.Sber, dataSource.Bars.Keys.ToList());
+            Assert.Contains(Symbols.Vtbr, dataSource.Bars.Keys.ToList());
         }
 
         [Test]
         public void DataSourceLoadedFromDailyScvIsValid()
         {
             var dataSource = CsvDataSource.CreateFormStrings(Mother.DailyCsvData);
-            Assert.IsNotNull(dataSource.Frames);
-            Assert.AreEqual(1, dataSource.Frames.Keys.Count);
-            Assert.Contains(Symbols.Sber, dataSource.Frames.Keys.ToList());
+            Assert.IsNotNull(dataSource.Bars);
+            Assert.AreEqual(1, dataSource.Bars.Keys.Count);
+            Assert.Contains(Symbols.Sber, dataSource.Bars.Keys.ToList());
 
-            var sberFrame = dataSource.Frames[Symbols.Sber];
-            Assert.IsTrue(sberFrame.RowKeys.Any());
+            var sberBar = dataSource.Bars[Symbols.Sber];
+            Assert.IsTrue(sberBar.Keys.Any());
         }
 
         [Test]
         public void String2FrameTransformIsValid()
         {
             var csvString = Mother.DailyCsvData.First().Value;
-            var frame = Csv2Frame.LoadFromString(csvString);
-            Assert.IsTrue(frame.RowCount > 0);
-            frame.Print();
+            var bars = Csv2Frame.LoadBarsFromString(csvString);
+            Assert.IsTrue(bars.Count > 0);
         }
     }
 }
