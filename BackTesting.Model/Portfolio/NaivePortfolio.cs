@@ -48,7 +48,7 @@
                 kvp.Value.Returns = returns;
             }
 
-            return this.HoldingHistory.Values.ToDictionary(holding => holding.DateTime, holding => holding.EquityCurve);
+            return this.HoldingHistory.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.EquityCurve);
         }
 
         public void UpdateSignal(SignalEvent signal)

@@ -5,7 +5,6 @@
     using System.IO;
     using System.Text;
     using BackTesting.Model.MarketData;
-    using BackTesting.Model.MarketData.Csv;
     using CsvHelper;
     using CsvHelper.Configuration;
 

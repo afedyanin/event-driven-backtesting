@@ -41,10 +41,9 @@
     <Compile Include="DataHandlers\IDataHandler.cs" />
     <Compile Include="DataHandlers\HistoricDataHandler.cs" />
     <Compile Include="MarketData\Bar.cs" />
-    <Compile Include="MarketData\ColumnNames.cs" />
     <Compile Include="MarketData\ComposedMarketData.cs" />
     <Compile Include="MarketData\CsvDataSource.cs" />
-    <Compile Include="MarketData\Csv\BarCsvMap.cs" />
+    <Compile Include="MarketData\BarCsvMap.cs" />
     <Compile Include="MarketData\IMarketData.cs" />
     <Compile Include="Events\Event.cs" />
     <Compile Include="Enums\EventType.cs" />

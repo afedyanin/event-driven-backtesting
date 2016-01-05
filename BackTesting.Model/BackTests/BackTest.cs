@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using BackTesting.Model.DataHandlers;
     using BackTesting.Model.Events;
@@ -136,17 +137,31 @@
 
         private void PrintHoldingHistory(IDictionary<DateTime, Holding> holdingHistory)
         {
-            foreach (var holding in holdingHistory.Values)
+            foreach (var key in holdingHistory.Keys.Take(15))
             {
-                Console.WriteLine(holding);
+                Console.WriteLine(holdingHistory[key]);
+            }
+
+            Console.WriteLine("......................................");
+
+            foreach (var key in holdingHistory.Keys.OrderByDescending(k => k).Take(15))
+            {
+                Console.WriteLine(holdingHistory[key]);
             }
         }
 
         private void PrintEquityCurve(IDictionary<DateTime, decimal> equityCurve)
         {
-            foreach (var kvp in equityCurve)
+            foreach (var key in equityCurve.Keys.Take(15))
             {
-                Console.WriteLine($"{kvp.Key} {kvp.Value}");
+                Console.WriteLine($"{key} {equityCurve[key]}");
+            }
+
+            Console.WriteLine("......................................");
+
+            foreach (var key in equityCurve.Keys.OrderByDescending(k => k).Take(15))
+            {
+                Console.WriteLine($"{key} {equityCurve[key]}");
             }
         }
 

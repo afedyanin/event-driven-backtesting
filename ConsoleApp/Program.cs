@@ -29,7 +29,7 @@
         private static void DoMainBackTest()
         {
             var eventBus = new QueuedEventBus();
-            var dataSource = CsvDataSource.CreateFromFiles("Data\\Day", new[] { Symbols.Sber });
+            var dataSource = CsvDataSource.CreateFromFiles("Data\\Min1", new[] { Symbols.Sber, Symbols.Vtbr });
             var marketData = new ComposedMarketData(dataSource.Bars);
             var bars = new HistoricDataHandler(eventBus, marketData);
             var strategy = new BuyAndHoldStrategy(eventBus, bars);

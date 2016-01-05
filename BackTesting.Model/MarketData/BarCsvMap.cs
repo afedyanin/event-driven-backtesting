@@ -1,4 +1,4 @@
-﻿namespace BackTesting.Model.MarketData.Csv
+﻿namespace BackTesting.Model.MarketData
 {
     using BackTesting.Model.Utils;
     using CsvHelper.Configuration;

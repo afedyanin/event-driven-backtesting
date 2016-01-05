@@ -16,6 +16,11 @@
         public decimal Returns { get; set; }
         public decimal EquityCurve { get; set; }
 
+        public Holding()
+        {
+            this.SymbolHoldings = new Dictionary<string, decimal>();
+        }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
